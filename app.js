@@ -1,6 +1,6 @@
 const months = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
 const longMonths = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
-const defaultInstallation = { name: "Installatie 1", panelCount: 10, panelWp: 430, orientation: 1, shade: 1 };
+const defaultInstallation = { name: "Installatie 1", panelCount: 10, panelWp: 430, orientation: 1, tilt: 35, shade: 1 };
 const defaultSettings = { latitude: 52.09, longitude: 5.12, contractType: "vast", energyPrice: .30, installations: [defaultInstallation] };
 // Historische Nederlandse dynamische marktprijzen per maand, gebruikt als referentieprofiel.
 // Bedragen zijn euro per kWh en exclusief belastingen en leveranciersopslag.
@@ -40,6 +40,7 @@ function installationTemplate(item, index) {
       <label>Aantal panelen<input type="number" min="1" max="500" data-field="panelCount" value="${item.panelCount}"></label>
       <label>Vermogen per paneel<div class="input-suffix"><input type="number" min="100" max="800" step="5" data-field="panelWp" value="${item.panelWp}"><span>Wp</span></div></label>
       <label>Richting van het dak<select data-field="orientation">${options([[1,"Zuid"],[.95,"Zuidoost / Zuidwest"],[.85,"Oost / West"],[.72,"Noord"]])}</select></label>
+      <label>Hellingshoek panelen<div class="input-suffix"><input type="number" min="0" max="90" step="1" data-field="tilt" value="${item.tilt}"><span>°</span></div></label>
       <label>Schaduw<select data-field="shade">
         <option value="1" ${item.shade == 1 ? "selected" : ""}>Geen schaduw</option>
         <option value=".92" ${item.shade == .92 ? "selected" : ""}>Een beetje schaduw</option>
@@ -82,10 +83,16 @@ function parseDutchNumber(value) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+function tiltFactor(tilt) {
+  const safeTilt = Math.max(0, Math.min(90, Number(tilt) || 0));
+  const difference = Math.abs(safeTilt - 35);
+  return Math.max(.72, 1 - Math.pow(difference / 90, 1.55) * .38);
+}
+
 function calculate() {
   const s = getSettings();
   const systemKwp = installations.reduce((sum, item) => sum + item.panelCount * item.panelWp / 1000, 0);
-  const annual = installations.reduce((sum, item) => sum + item.panelCount * item.panelWp / 1000 * 875 * item.orientation * item.shade, 0);
+  const annual = installations.reduce((sum, item) => sum + item.panelCount * item.panelWp / 1000 * 875 * item.orientation * tiltFactor(item.tilt) * item.shade, 0);
   const monthlyWeights = [.025,.045,.085,.115,.14,.145,.14,.125,.09,.055,.025,.01];
   const middleDays = [15,46,74,105,135,166,196,227,258,288,319,349];
   data = months.map((month, i) => ({ month, daylight: daylightHours(middleDays[i], s.latitude), production: annual * monthlyWeights[i] }));
@@ -231,19 +238,47 @@ async function searchLocation() {
     return;
   }
 
-  message.textContent = "Plaats zoeken...";
-  const url = new URL("https://geocoding-api.open-meteo.com/v1/search");
-  url.search = new URLSearchParams({ name: query, count: "1", language: "nl", format: "json" });
+  message.textContent = "Adres of plaats zoeken...";
   try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error("Zoeken is tijdelijk niet beschikbaar.");
-    const result = await response.json();
-    const place = result.results?.[0];
-    if (!place) throw new Error("Geen plaats gevonden. Probeer een plaatsnaam of postcode.");
+    const addressUrl = new URL("https://nominatim.openstreetmap.org/search");
+    addressUrl.search = new URLSearchParams({
+      q: query,
+      format: "jsonv2",
+      addressdetails: "1",
+      limit: "1",
+      countrycodes: "nl",
+      "accept-language": "nl"
+    });
+    const addressResponse = await fetch(addressUrl);
+    const addressResults = addressResponse.ok ? await addressResponse.json() : [];
+    let latitude, longitude;
 
-    selectedLocationName = [place.name, place.admin1, place.country].filter(Boolean).join(", ");
-    $("latitude").value = place.latitude.toFixed(2);
-    $("longitude").value = place.longitude.toFixed(2);
+    if (addressResults[0]) {
+      const result = addressResults[0];
+      const address = result.address || {};
+      const street = address.road || address.pedestrian || address.residential || address.footway;
+      const city = address.city || address.town || address.village || address.municipality;
+      selectedLocationName = [
+        [street, address.house_number].filter(Boolean).join(" "),
+        address.postcode,
+        city
+      ].filter(Boolean).join(", ") || result.display_name;
+      latitude = +result.lat;
+      longitude = +result.lon;
+    } else {
+      const placeUrl = new URL("https://geocoding-api.open-meteo.com/v1/search");
+      placeUrl.search = new URLSearchParams({ name: query, count: "1", language: "nl", format: "json" });
+      const placeResponse = await fetch(placeUrl);
+      const placeData = placeResponse.ok ? await placeResponse.json() : {};
+      const place = placeData.results?.[0];
+      if (!place) throw new Error("Geen adres of plaats gevonden. Voeg eventueel een huisnummer en woonplaats toe.");
+      selectedLocationName = [place.name, place.admin1, place.country].filter(Boolean).join(", ");
+      latitude = place.latitude;
+      longitude = place.longitude;
+    }
+
+    $("latitude").value = latitude.toFixed(5);
+    $("longitude").value = longitude.toFixed(5);
     historicWeather = {};
     message.textContent = `Actieve locatie: ${selectedLocationName}`;
     calculate();
@@ -295,7 +330,7 @@ $("addInstallationButton").addEventListener("click", () => {
   installations.push({ ...defaultInstallation, name: `Installatie ${installations.length + 1}` });
   renderInstallations(); calculate();
 });
-$("resetButton").addEventListener("click", () => { localStorage.removeItem("zonlijnSettingsV2"); fixedEnergyPrice=defaultSettings.energyPrice;selectedLocationName="";historicWeather={};$("locationSearch").value="";$("locationSearchMessage").textContent="Kies zelf de plaats waarvoor je wilt rekenen.";installations = [{...defaultInstallation}]; formIds.forEach(id => $(id).value = defaultSettings[id]); renderInstallations(); calculate(); });
+$("resetButton").addEventListener("click", () => { localStorage.removeItem("zonlijnSettingsV2"); fixedEnergyPrice=defaultSettings.energyPrice;selectedLocationName="";historicWeather={};$("locationSearch").value="";$("locationSearchMessage").textContent="Vul een adres met huisnummer in om ook de straatnaam te zien.";installations = [{...defaultInstallation}]; formIds.forEach(id => $(id).value = defaultSettings[id]); renderInstallations(); calculate(); });
 $("settingsButton").addEventListener("click", () => $("settings").scrollIntoView({ behavior:"smooth", block:"center" }));
 $("locationButton").addEventListener("click", () => navigator.geolocation?.getCurrentPosition(pos => { selectedLocationName="Mijn huidige locatie";historicWeather={};$("latitude").value=pos.coords.latitude.toFixed(2);$("longitude").value=pos.coords.longitude.toFixed(2);calculate(); }, () => $("locationLabel").textContent="Locatie niet toegestaan"));
 $("locationSearchButton").addEventListener("click", searchLocation);
