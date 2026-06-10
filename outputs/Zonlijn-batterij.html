@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#071611">
+  <title>Zonlijn - Terugverdientijd thuisbatterij</title>
+  <style>
+:root {
+  --bg: #071611;
+  --card: #0d211a;
+  --card-light: #112a21;
+  --line: rgba(255, 255, 255, 0.09);
+  --text: #f4f9f6;
+  --muted: #91a89d;
+  --lime: #c9f467;
+  --green: #55d99b;
+  --yellow: #ffd55c;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "DM Sans", sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.glow {
+  position: fixed; width: 420px; height: 420px; border-radius: 50%;
+  filter: blur(110px); opacity: .11; pointer-events: none; z-index: -1;
+}
+.glow-one { background: var(--lime); top: -180px; right: -100px; }
+.glow-two { background: #0a8f62; bottom: 15%; left: -240px; }
+
+.topbar, main, footer { width: min(1180px, calc(100% - 40px)); margin: auto; }
+.topbar {
+  height: 78px; display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+}
+.brand { color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 11px; font: 800 20px Manrope; }
+.brand-mark {
+  background: var(--lime); color: var(--bg); width: 32px; height: 32px; border-radius: 9px;
+  display: grid; place-items: center; transform: rotate(-8deg);
+}
+.top-actions { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 13px; }
+.main-nav { display: flex; align-items: center; gap: 5px; padding: 4px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.025); }
+.main-nav a { padding: 7px 11px; border-radius: 8px; color: var(--muted); text-decoration: none; font-size: 11px; font-weight: 700; }
+.main-nav a.active { color: #102016; background: var(--lime); }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px var(--green); }
+button { font: inherit; cursor: pointer; }
+.icon-button, .small-button {
+  border: 1px solid var(--line); color: var(--text); background: rgba(255,255,255,.04); border-radius: 9px;
+}
+.icon-button { width: 37px; height: 37px; margin-left: 14px; }
+
+main { padding: 84px 0; }
+.hero { display: grid; grid-template-columns: 1fr 310px; align-items: end; gap: 70px; margin-bottom: 55px; }
+.eyebrow { color: var(--lime); font: 700 11px Manrope; letter-spacing: .18em; }
+h1, h2 { font-family: Manrope, sans-serif; margin: 0; letter-spacing: -.045em; }
+h1 { font-size: clamp(46px, 6vw, 76px); line-height: .99; margin-top: 17px; max-width: 750px; }
+h2 { font-size: 24px; margin-top: 9px; }
+.hero p { color: var(--muted); max-width: 510px; font-size: 17px; line-height: 1.7; margin-top: 22px; }
+.today-card {
+  background: linear-gradient(150deg, #153527, #0c2018); padding: 25px; border: 1px solid var(--line);
+  border-radius: 20px; box-shadow: 0 25px 60px rgba(0,0,0,.22);
+}
+.today-card strong { display: block; font: 800 34px Manrope; margin: 13px 0 16px; }
+.today-range { color: var(--muted); font-size: 10px; margin: -9px 0 13px; }
+.today-value { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 11px; margin: -7px 0 14px; }
+.today-value b { color: var(--lime); font: 700 13px Manrope; }
+.today-line { height: 5px; border-radius: 10px; background: rgba(255,255,255,.08); overflow: hidden; }
+.today-line span { height: 100%; display: block; background: var(--lime); border-radius: inherit; }
+.today-meta { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; margin-top: 12px; }
+.today-note { display: block; color: #718b7e; font-size: 9px; margin-top: 10px; }
+
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
+.metric-card, .chart-card, .settings-card {
+  background: rgba(13,33,26,.86); border: 1px solid var(--line); border-radius: 20px;
+}
+.metric-card { min-height: 215px; padding: 22px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+.metric-card.featured { background: var(--lime); color: #102016; }
+.metric-icon { width: 31px; height: 31px; border-radius: 9px; display: grid; place-items: center; background: rgba(255,255,255,.08); margin-bottom: 24px; }
+.featured .metric-icon { background: rgba(10,30,20,.1); }
+.metric-card > span { color: var(--muted); font-size: 12px; }
+.featured > span, .featured small { color: #4e684e; }
+.metric-card strong { font: 800 30px Manrope; margin-top: 7px; }
+.metric-card small { color: var(--muted); margin-top: 0; }
+.comparison { margin-top: auto; font-size: 11px; font-weight: 600; }
+.comparison.muted { color: var(--muted); }
+.mini-bars { height: 30px; display: flex; gap: 3px; align-items: flex-end; margin-top: auto; }
+.mini-bars i { display: block; width: 7px; background: var(--green); opacity: .7; border-radius: 2px 2px 0 0; }
+.daylight-extremes { display:grid; gap:11px; margin-top:auto; }
+.daylight-extremes div { display:flex; align-items:end; justify-content:space-between; gap:10px; padding-top:9px; border-top:1px solid var(--line); }
+.daylight-extremes small { max-width:120px; color:var(--muted); font-size:9px; line-height:1.4; }
+.daylight-extremes strong { margin:0; font:800 17px Manrope; white-space:nowrap; }
+
+.chart-card { padding: 30px 30px 24px; margin-bottom: 14px; }
+.section-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+.legend { display: flex; gap: 22px; color: var(--muted); font-size: 12px; padding-top: 13px; }
+.chart-actions { display: flex; align-items: flex-start; gap: 15px; }
+.chart-back { display: none; margin-top: 5px; color: var(--lime); }
+.chart-back.visible { display: block; }
+.legend-line { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 6px; border-radius: 4px; }
+.legend-line.sunlight { background: var(--yellow); }
+.legend-line.production { background: var(--lime); }
+.legend-line.weather { background: #ff9b5e; }
+.weather-legend { display: none; }
+.weather-legend.visible { display: inline; }
+.chart-wrap { height: 330px; position: relative; margin-top: 30px; }
+#yearChart { width: 100%; height: 100%; cursor: crosshair; touch-action: pan-y; }
+.chart-tooltip {
+  display: none; position: absolute; z-index: 4; pointer-events: none; min-width: 175px;
+  background: #f5f9f7; color: #13241b; padding: 12px 14px; border-radius: 12px;
+  font-size: 11px; line-height: 1.7; box-shadow: 0 12px 35px rgba(0,0,0,.35);
+}
+.chart-tooltip.visible { display: block; }
+.chart-tooltip strong { display: block; font: 800 13px Manrope; margin-bottom: 4px; text-transform: capitalize; }
+.chart-tooltip span { display: flex; justify-content: space-between; gap: 18px; color: #53675c; }
+.chart-tooltip b { color: #13241b; }
+.chart-insight {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 15px; border-top: 1px solid var(--line);
+  padding-top: 20px; margin-top: 12px;
+}
+.insight-icon { width: 39px; height: 39px; border-radius: 12px; display: grid; place-items: center; color: var(--lime); background: rgba(201,244,103,.1); }
+.chart-insight strong { font-size: 13px; }
+.chart-insight p { color: var(--muted); font-size: 11px; margin: 4px 0 0; }
+.chart-insight > strong:last-child { font: 800 18px Manrope; color: var(--lime); }
+
+.lower-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.settings-card { padding: 30px; }
+.calculation-note {
+  margin: 18px 0 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--muted);
+  background: rgba(255,255,255,.025);
+  font-size: .86rem;
+  line-height: 1.55;
+}
+.small-button { padding: 7px 12px; font-size: 11px; }
+#solarForm { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px 14px; margin-top: 28px; }
+.installation {
+  margin-top: 22px; padding: 18px; border-radius: 14px; border: 1px solid var(--line);
+  background: rgba(255,255,255,.025);
+}
+.installation-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 15px; }
+.installation-head strong { font: 700 13px Manrope; }
+.remove-installation {
+  color: #ff9b92; border: 0; background: transparent; font-size: 11px; padding: 5px;
+}
+.installation-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.add-installation-button {
+  width: 100%; margin-top: 12px; padding: 12px; color: var(--lime); background: rgba(201,244,103,.05);
+  border: 1px dashed rgba(201,244,103,.35); border-radius: 11px; font-weight: 700;
+}
+label { display: grid; gap: 8px; color: var(--muted); font-size: 11px; font-weight: 600; }
+input, select {
+  width: 100%; background: rgba(255,255,255,.04); color: var(--text); border: 1px solid var(--line);
+  padding: 12px 13px; border-radius: 10px; outline: none; font: 600 13px "DM Sans";
+}
+input:focus, select:focus { border-color: rgba(201,244,103,.5); }
+input:disabled {
+  cursor: not-allowed; color: #789085; background: rgba(255,255,255,.025);
+  border-color: rgba(255,255,255,.05); opacity: .65;
+}
+label small { color: #718b7e; font-size: 10px; font-weight: 500; line-height: 1.4; }
+.dynamic-cost-field { display: none; }
+.dynamic-cost-field.visible { display: grid; }
+option { background: #10251c; }
+.input-suffix { display: flex; position: relative; }
+.input-suffix span { position: absolute; right: 12px; top: 12px; color: var(--muted); font-size: 12px; }
+.location-button {
+  width: 100%; padding: 13px 16px; border: 1px solid var(--line); border-radius: 11px; margin-top: 18px; font-weight: 700;
+}
+.location-search-label { grid-column: 1 / -1; }
+.location-search { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.location-search button {
+  padding: 0 17px; color: #102016; background: var(--lime); border: 0; border-radius: 10px; font-weight: 700;
+}
+.location-button { color: var(--text); background: transparent; }
+.disclaimer {
+  width: min(1180px, calc(100% - 40px)); margin: 0 auto 18px; padding: 16px 18px; border: 1px solid var(--line);
+  border-radius: 12px; color: #718b7e; background: rgba(255,255,255,.025); font-size: 10px; line-height: 1.6;
+}
+.disclaimer strong { display: block; color: var(--muted); margin-bottom: 4px; }
+.disclaimer p { margin: 0; }
+footer { display: flex; justify-content: space-between; align-items: center; padding: 30px 0 45px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+footer > div { display: flex; gap: 12px; }
+.visitor-counter { padding: 5px 9px; border-radius: 20px; color: #718b7e; background: rgba(255,255,255,.035); border: 1px solid var(--line); font-size: 9px; }
+.visitor-counter b { color: var(--muted); }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; }
+  .metrics { grid-template-columns: repeat(2, 1fr); }
+  .lower-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .topbar, main, footer { width: min(100% - 24px, 1180px); }
+  main { padding: 48px 0; }
+  .top-actions > span:not(.status-dot) { display: none; }
+  .main-nav a { padding: 7px; font-size: 9px; }
+  .metrics, #solarForm, .installation-grid { grid-template-columns: 1fr; }
+  .chart-card, .settings-card { padding: 20px; }
+  .section-heading, .legend { flex-direction: column; }
+  .chart-actions { flex-direction: column; }
+  .legend { gap: 10px; }
+  .chart-wrap { height: 280px; }
+  footer, footer > div { align-items: flex-start; flex-direction: column; gap: 8px; }
+}
+
+</style>
+  <style>
+.simple-battery-main { max-width:1050px; }
+.simple-intro { max-width:720px; margin-bottom:45px; }
+.simple-intro p { color:var(--muted); max-width:620px; font-size:16px; line-height:1.7; }
+.calculator-layout { display:grid; grid-template-columns:1.2fr .8fr; gap:16px; align-items:start; }
+.simple-form-card,.simple-result-card { border:1px solid var(--line); border-radius:20px; background:rgba(13,33,26,.88); }
+.simple-form-card { padding:28px; }
+.simple-form-card form { display:grid; gap:16px; }
+fieldset { display:grid; grid-template-columns:1fr 1fr; gap:16px 13px; margin:0; padding:18px; border:1px solid var(--line); border-radius:14px; }
+legend { padding:0 8px; color:var(--lime); font:700 12px Manrope; }
+.capacity-buttons,.choice-buttons { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:7px; }
+.capacity-buttons button,.choice-buttons button { flex:1; min-width:50px; padding:9px; border:1px solid var(--line); border-radius:8px; color:var(--muted); background:rgba(255,255,255,.04); font-size:10px; font-weight:700; }
+.capacity-buttons button.selected,.choice-buttons button.selected { color:#102016; border-color:var(--lime); background:var(--lime); }
+.choice-buttons.three button { min-width:80px; }
+.price-indication { grid-column:1/-1; padding:12px 13px; border-radius:10px; color:var(--muted); background:rgba(201,244,103,.06); border:1px solid rgba(201,244,103,.14); font-size:10px; line-height:1.6; }
+.price-indication strong { color:var(--lime); }
+.advanced-toggle { display:flex; justify-content:space-between; width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:10px; color:var(--text); background:rgba(255,255,255,.04); font-weight:700; }
+.advanced-fields { display:none; }
+.advanced-fields.visible { display:grid; }
+.simple-result-card { position:sticky; top:18px; padding:28px; }
+.payback-result { margin:20px 0 14px; padding:20px; border-radius:14px; color:#31513b; background:var(--lime); }
+.payback-result small { display:block; font-size:10px; font-weight:700; }
+.payback-result strong { display:block; color:#102016; font:800 36px Manrope; margin-top:3px; }
+.result-grid { display:grid; grid-template-columns:1fr; gap:8px; }
+.result-grid div { padding:13px; border:1px solid var(--line); border-radius:10px; background:rgba(255,255,255,.025); }
+.result-grid span { display:block; color:var(--muted); font-size:9px; margin-bottom:4px; }
+.result-grid strong { font:700 13px Manrope; }
+.result-explanation { margin-top:14px; padding:14px; border-radius:10px; color:var(--muted); background:rgba(255,255,255,.025); font-size:10px; line-height:1.7; }
+.result-warning { color:#ffd55c; font-size:10px; line-height:1.6; margin:12px 0 0; }
+.footer-link { color:var(--lime); text-decoration:none; }
+@media(max-width:850px){.calculator-layout{grid-template-columns:1fr}.simple-result-card{position:static}}
+@media(max-width:600px){fieldset,.result-grid{grid-template-columns:1fr}.simple-form-card,.simple-result-card{padding:19px}}
+
+</style>
+</head>
+<body>
+  <div class="glow glow-one"></div><div class="glow glow-two"></div>
+  <header class="topbar">
+    <a class="brand" href="Zonlijn-app.html"><span class="brand-mark">Z</span><span>Zonlijn</span></a>
+    <nav class="main-nav"><a href="Zonlijn-app.html">Zonnepanelen</a><a class="active" href="batterij.html">Thuisbatterij</a></nav>
+    <div class="top-actions"><span class="status-dot"></span><span>Eenvoudige rekenhulp</span></div>
+  </header>
+
+  <main class="simple-battery-main">
+    <section class="simple-intro">
+      <span class="eyebrow">THUISBATTERIJ REKENHULP</span>
+      <h1>Wanneer verdien je een<br>thuisbatterij terug?</h1>
+      <p>Vul jouw situatie in en krijg een eenvoudige, indicatieve berekening zonder merken of ingewikkelde productkeuzes.</p>
+    </section>
+
+    <section class="calculator-layout">
+      <article class="simple-form-card">
+        <form id="simpleBatteryForm">
+          <fieldset>
+            <legend>1. Jouw batterij</legend>
+            <label>Opslagcapaciteit
+              <div class="capacity-buttons" id="capacityButtons">
+                <button type="button" data-capacity="3">3</button><button type="button" data-capacity="5">5</button>
+                <button type="button" data-capacity="7" class="selected">7</button><button type="button" data-capacity="10">10</button>
+                <button type="button" data-capacity="14">14</button><button type="button" data-capacity="20">20</button>
+              </div>
+              <div class="input-suffix"><input type="number" id="capacity" min="1" max="100" step=".1" value="7"><span>kWh</span></div>
+            </label>
+            <label>Totale aanschafprijs inclusief installatie
+              <div class="input-suffix"><input type="number" id="purchasePrice" min="0" max="100000" step="100" value="6000"><span>€</span></div>
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>2. Jouw zonnepanelen</legend>
+            <div class="choice-buttons" id="solarButtons"><button type="button" data-value="yes" class="selected">Ja, ik heb zonnepanelen</button><button type="button" data-value="no">Nee</button></div>
+            <label id="solarYieldLabel">Jaarlijkse opwek
+              <div class="input-suffix"><input type="number" id="solarYield" min="0" max="100000" step="100" value="4500"><span>kWh/jaar</span></div>
+            </label>
+            <label id="directUseLabel">Direct eigen verbruik van zonnestroom
+              <div class="input-suffix"><input type="number" id="directUse" min="0" max="100" value="30"><span>%</span></div>
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>3. Jouw stroomcontract</legend>
+            <div class="choice-buttons three" id="contractButtons">
+              <button type="button" data-value="dynamic">Dynamisch</button><button type="button" data-value="variable">Variabel</button><button type="button" data-value="fixed" class="selected">Vast</button>
+            </div>
+            <div class="price-indication" id="priceIndication"></div>
+            <label>All-in stroomprijs <small id="buyPriceHelp"></small>
+              <div class="input-suffix"><input type="number" id="buyPrice" min="0" max="2" step=".001" value=".247"><span>€/kWh</span></div>
+            </label>
+            <label>Terugleververgoeding <small id="feedInPriceHelp"></small>
+              <div class="input-suffix"><input type="number" id="feedInPriceSimple" min="0" max="2" step=".01" value=".08"><span>€/kWh</span></div>
+            </label>
+            <label id="feedInCostLabel">Jaarlijkse terugleverkosten
+              <div class="input-suffix"><input type="number" id="feedInCost" min="0" max="10000" step="10" value="250"><span>€/jaar</span></div>
+            </label>
+          </fieldset>
+
+          <button type="button" class="advanced-toggle" id="advancedToggle">Meer instellingen tonen <span>+</span></button>
+          <fieldset class="advanced-fields" id="advancedFields">
+            <legend>Meer instellingen</legend>
+            <label>Rendement batterij (RTE)<div class="input-suffix"><input type="number" id="rte" min="50" max="100" value="80"><span>%</span></div><small>Conservatieve standaard; pas aan met productgegevens.</small></label>
+            <label>Nachtverbruik<div class="input-suffix"><input type="number" id="nightUse" min="0" max="100" step=".1" value="3"><span>kWh/nacht</span></div></label>
+          </fieldset>
+        </form>
+      </article>
+
+      <aside class="simple-result-card">
+        <span class="eyebrow">JOUW RESULTAAT</span>
+        <div class="payback-result"><small>Geschatte terugverdientijd</small><strong id="simplePayback">—</strong></div>
+        <div class="result-grid">
+          <div><span>Besparing per jaar</span><strong id="simpleYearSaving">€ —</strong></div>
+        </div>
+        <div class="result-explanation" id="simpleExplanation"></div>
+        <p class="result-warning" id="resultWarning"></p>
+      </aside>
+    </section>
+  </main>
+
+  <aside class="disclaimer"><strong>Disclaimer</strong><p>Deze rekenhulp geeft alleen een indicatieve richting en is geen financieel, technisch of aankoopadvies. Werkelijke resultaten hangen af van jouw verbruik, opwek, batterij, energieprijzen en aansturing. Aan de uitkomst kunnen geen rechten worden ontleend.</p></aside>
+  <footer><div><strong>Zonlijn</strong><span>Eenvoudige thuisbatterijrekenhulp</span></div><a class="footer-link" href="Zonlijn-app.html">Terug naar zonnepanelen</a></footer>
+  <script>
+const $=id=>document.getElementById(id);
+let hasSolar=true,contract="fixed";
+const contractIndications={
+  dynamic:{buy:.29,feed:.07,cheap:.18,text:"Dynamisch: rekenaannames voor dure en goedkope uren. Zonder gekoppelde historische uurdata zijn dit geen gemeten gemiddelden."},
+  variable:{buy:.247,feed:.08,cheap:.18,text:"Variabel: vul jouw contractgegevens in. De startwaarde van €0,247/kWh is het CBS-gemiddelde voor Nederlandse huishoudens over 2025, inclusief btw, belastingen en netwerkprijs."},
+  fixed:{buy:.247,feed:.08,cheap:.18,text:"Vast: vul jouw contractgegevens in. De startwaarde van €0,247/kWh is het CBS-gemiddelde voor Nederlandse huishoudens over 2025, inclusief btw, belastingen en netwerkprijs."}
+};
+// Referentieprofiel voor circa 4.500 kWh jaaropwek: geschat aantal dagen
+// waarop een batterij tot ieder percentage gevuld kan worden.
+const fillProfile=[[0,51.8],[.1,39.1],[.2,19],[.3,15.2],[.4,12.7],[.5,11.3],[.6,11.1],[.7,9.4],[.8,9.1],[.9,9.3],[1,176.6]];
+const ids=["capacity","purchasePrice","solarYield","directUse","buyPrice","feedInPriceSimple","feedInCost","rte","nightUse"];
+const value=id=>+$(`${id}`).value||0;
+const money=v=>`€ ${Math.round(v).toLocaleString("nl-NL")}`;
+const number=(v,d=1)=>v.toLocaleString("nl-NL",{maximumFractionDigits:d});
+
+function calculate(){
+  const capacity=value("capacity"),cost=value("purchasePrice"),rte=value("rte")/100;
+  const solarSurplus=hasSolar?value("solarYield")*(1-value("directUse")/100):0;
+  const referenceSurplus=4500*.70;
+  const fillScale=hasSolar?Math.max(0,Math.min(1.5,solarSurplus/referenceSurplus)):0;
+  const solarStored=fillProfile.reduce((sum,[fill,days])=>{
+    const output=Math.min(value("nightUse"),fill*fillScale*capacity*Math.sqrt(Math.max(rte,0)));
+    return sum+days*output;
+  },0);
+  const solarValue=solarStored*value("buyPrice");
+  const yearly=solarValue;
+  const payback=yearly>0?cost/yearly:Infinity;
+
+  $("simplePayback").textContent=Number.isFinite(payback)?`${number(payback)} jaar`:"Niet berekenbaar";
+  $("simpleYearSaving").textContent=money(yearly);
+  $("simpleExplanation").innerHTML=`Benadering met een vulpercentageprofiel van <b>364,6 dagen</b>: per groep wordt berekend hoeveel stroom 's nachts bruikbaar is, beperkt door nachtverbruik, capaciteit en rendement.<br>Geschat via batterij gebruikte zonnestroom: <b>${Math.round(solarStored).toLocaleString("nl-NL")} kWh</b>.<br>Waarde zelfverbruik: <b>${money(solarValue)}</b> op basis van de ingevulde all-in stroomprijs.${contract==="dynamic"?" Handelen met goedkope en dure uren is niet meegerekend.":""}<br><small>Om vergelijkbaar met de genoemde methode te rekenen, worden gemiste terugleververgoeding en terugleverkosten niet in deze hoofdschatting verwerkt.</small>`;
+  $("resultWarning").textContent=Number.isFinite(payback)&&payback>15?"Let op: deze terugverdientijd is langer dan een veelgebruikte rekenlevensduur van ongeveer 15 jaar.":"";
+  const indication=contractIndications[contract];
+  $("priceIndication").innerHTML=contract==="dynamic"
+    ? `<strong>Dynamische rekenaannames</strong><br>${indication.text} Controleer deze bedragen met jouw eigen historische data.`
+    : `<strong>Gebruik jouw eigen contractgegevens</strong><br>${indication.text}`;
+  $("buyPrice").disabled=false;$("feedInPriceSimple").disabled=false;
+  $("buyPriceHelp").textContent=contract==="dynamic"?"Gemiddelde dure all-in prijs":"Overnemen van jouw contract";
+  $("feedInPriceHelp").textContent="Overnemen van jouw contract of leverancier";
+  localStorage.setItem("zonlijnSimpleBattery",JSON.stringify({hasSolar,contract,values:Object.fromEntries(ids.map(id=>[id,$(id).value]))}));
+}
+function selectButtons(container,button){container.querySelectorAll("button").forEach(item=>item.classList.toggle("selected",item===button));}
+document.querySelectorAll("[data-capacity]").forEach(button=>button.addEventListener("click",()=>{selectButtons($("capacityButtons"),button);$("capacity").value=button.dataset.capacity;calculate()}));
+document.querySelectorAll("#solarButtons button").forEach(button=>button.addEventListener("click",()=>{selectButtons($("solarButtons"),button);hasSolar=button.dataset.value==="yes";$("solarYieldLabel").style.display=hasSolar?"grid":"none";$("directUseLabel").style.display=hasSolar?"grid":"none";calculate()}));
+document.querySelectorAll("#contractButtons button").forEach(button=>button.addEventListener("click",()=>{
+  selectButtons($("contractButtons"),button);contract=button.dataset.value;const indication=contractIndications[contract];
+  if(contract==="dynamic"){$("buyPrice").value=indication.buy;$("feedInPriceSimple").value=indication.feed;}
+  document.querySelectorAll(".dynamic-only").forEach(el=>el.style.display=contract==="dynamic"?"grid":"none");$("feedInCostLabel").style.display=contract==="dynamic"?"none":"grid";calculate()
+}));
+$("advancedToggle").addEventListener("click",()=>{const open=$("advancedFields").classList.toggle("visible");$("advancedToggle").innerHTML=`Meer instellingen ${open?"verbergen":"tonen"} <span>${open?"−":"+"}</span>`});
+ids.forEach(id=>$(id).addEventListener("input",calculate));
+function restore(){
+  const s=JSON.parse(localStorage.getItem("zonlijnSimpleBattery")||"null");if(!s)return;
+  hasSolar=s.hasSolar;contract=s.contract;Object.entries(s.values||{}).forEach(([id,v])=>{if($(id))$(id).value=v});
+  document.querySelectorAll("#solarButtons button").forEach(button=>button.classList.toggle("selected",(button.dataset.value==="yes")===hasSolar));
+  document.querySelectorAll("#contractButtons button").forEach(button=>button.classList.toggle("selected",button.dataset.value===contract));
+  $("solarYieldLabel").style.display=hasSolar?"grid":"none";$("directUseLabel").style.display=hasSolar?"grid":"none";
+  document.querySelectorAll(".dynamic-only").forEach(el=>el.style.display=contract==="dynamic"?"grid":"none");$("feedInCostLabel").style.display=contract==="dynamic"?"none":"grid";
+}
+restore();calculate();
+
+</script>
+</body>
+</html>

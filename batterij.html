@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#071611">
+  <title>Zonlijn - Terugverdientijd thuisbatterij</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="batterij.css">
+</head>
+<body>
+  <div class="glow glow-one"></div><div class="glow glow-two"></div>
+  <header class="topbar">
+    <a class="brand" href="index.html"><span class="brand-mark">Z</span><span>Zonlijn</span></a>
+    <nav class="main-nav"><a href="index.html">Zonnepanelen</a><a class="active" href="batterij.html">Thuisbatterij</a></nav>
+    <div class="top-actions"><span class="status-dot"></span><span>Eenvoudige rekenhulp</span></div>
+  </header>
+
+  <main class="simple-battery-main">
+    <section class="simple-intro">
+      <span class="eyebrow">THUISBATTERIJ REKENHULP</span>
+      <h1>Wanneer verdien je een<br>thuisbatterij terug?</h1>
+      <p>Vul jouw situatie in en krijg een eenvoudige, indicatieve berekening zonder merken of ingewikkelde productkeuzes.</p>
+    </section>
+
+    <section class="calculator-layout">
+      <article class="simple-form-card">
+        <form id="simpleBatteryForm">
+          <fieldset>
+            <legend>1. Jouw batterij</legend>
+            <label>Opslagcapaciteit
+              <div class="capacity-buttons" id="capacityButtons">
+                <button type="button" data-capacity="3">3</button><button type="button" data-capacity="5">5</button>
+                <button type="button" data-capacity="7" class="selected">7</button><button type="button" data-capacity="10">10</button>
+                <button type="button" data-capacity="14">14</button><button type="button" data-capacity="20">20</button>
+              </div>
+              <div class="input-suffix"><input type="number" id="capacity" min="1" max="100" step=".1" value="7"><span>kWh</span></div>
+            </label>
+            <label>Totale aanschafprijs inclusief installatie
+              <div class="input-suffix"><input type="number" id="purchasePrice" min="0" max="100000" step="100" value="6000"><span>€</span></div>
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>2. Jouw zonnepanelen</legend>
+            <div class="choice-buttons" id="solarButtons"><button type="button" data-value="yes" class="selected">Ja, ik heb zonnepanelen</button><button type="button" data-value="no">Nee</button></div>
+            <label id="solarYieldLabel">Jaarlijkse opwek
+              <div class="input-suffix"><input type="number" id="solarYield" min="0" max="100000" step="100" value="4500"><span>kWh/jaar</span></div>
+            </label>
+            <label id="directUseLabel">Direct eigen verbruik van zonnestroom
+              <div class="input-suffix"><input type="number" id="directUse" min="0" max="100" value="30"><span>%</span></div>
+            </label>
+          </fieldset>
+
+          <fieldset>
+            <legend>3. Jouw stroomcontract</legend>
+            <div class="choice-buttons three" id="contractButtons">
+              <button type="button" data-value="dynamic">Dynamisch</button><button type="button" data-value="variable">Variabel</button><button type="button" data-value="fixed" class="selected">Vast</button>
+            </div>
+            <div class="price-indication" id="priceIndication"></div>
+            <label>All-in stroomprijs <small id="buyPriceHelp"></small>
+              <div class="input-suffix"><input type="number" id="buyPrice" min="0" max="2" step=".001" value=".247"><span>€/kWh</span></div>
+            </label>
+            <label>Terugleververgoeding <small id="feedInPriceHelp"></small>
+              <div class="input-suffix"><input type="number" id="feedInPriceSimple" min="0" max="2" step=".01" value=".08"><span>€/kWh</span></div>
+            </label>
+            <label id="feedInCostLabel">Jaarlijkse terugleverkosten
+              <div class="input-suffix"><input type="number" id="feedInCost" min="0" max="10000" step="10" value="250"><span>€/jaar</span></div>
+            </label>
+          </fieldset>
+
+          <button type="button" class="advanced-toggle" id="advancedToggle">Meer instellingen tonen <span>+</span></button>
+          <fieldset class="advanced-fields" id="advancedFields">
+            <legend>Meer instellingen</legend>
+            <label>Rendement batterij (RTE)<div class="input-suffix"><input type="number" id="rte" min="50" max="100" value="80"><span>%</span></div><small>Conservatieve standaard; pas aan met productgegevens.</small></label>
+            <label>Nachtverbruik<div class="input-suffix"><input type="number" id="nightUse" min="0" max="100" step=".1" value="3"><span>kWh/nacht</span></div></label>
+          </fieldset>
+        </form>
+      </article>
+
+      <aside class="simple-result-card">
+        <span class="eyebrow">JOUW RESULTAAT</span>
+        <div class="payback-result"><small>Geschatte terugverdientijd</small><strong id="simplePayback">—</strong></div>
+        <div class="result-grid">
+          <div><span>Besparing per jaar</span><strong id="simpleYearSaving">€ —</strong></div>
+        </div>
+        <div class="result-explanation" id="simpleExplanation"></div>
+        <p class="result-warning" id="resultWarning"></p>
+      </aside>
+    </section>
+  </main>
+
+  <aside class="disclaimer"><strong>Disclaimer</strong><p>Deze rekenhulp geeft alleen een indicatieve richting en is geen financieel, technisch of aankoopadvies. Werkelijke resultaten hangen af van jouw verbruik, opwek, batterij, energieprijzen en aansturing. Aan de uitkomst kunnen geen rechten worden ontleend.</p></aside>
+  <footer><div><strong>Zonlijn</strong><span>Eenvoudige thuisbatterijrekenhulp</span></div><a class="footer-link" href="index.html">Terug naar zonnepanelen</a></footer>
+  <script src="batterij.js"></script>
+</body>
+</html>

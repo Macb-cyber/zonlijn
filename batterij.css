@@ -1,0 +1,31 @@
+.simple-battery-main { max-width:1050px; }
+.simple-intro { max-width:720px; margin-bottom:45px; }
+.simple-intro p { color:var(--muted); max-width:620px; font-size:16px; line-height:1.7; }
+.calculator-layout { display:grid; grid-template-columns:1.2fr .8fr; gap:16px; align-items:start; }
+.simple-form-card,.simple-result-card { border:1px solid var(--line); border-radius:20px; background:rgba(13,33,26,.88); }
+.simple-form-card { padding:28px; }
+.simple-form-card form { display:grid; gap:16px; }
+fieldset { display:grid; grid-template-columns:1fr 1fr; gap:16px 13px; margin:0; padding:18px; border:1px solid var(--line); border-radius:14px; }
+legend { padding:0 8px; color:var(--lime); font:700 12px Manrope; }
+.capacity-buttons,.choice-buttons { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:7px; }
+.capacity-buttons button,.choice-buttons button { flex:1; min-width:50px; padding:9px; border:1px solid var(--line); border-radius:8px; color:var(--muted); background:rgba(255,255,255,.04); font-size:10px; font-weight:700; }
+.capacity-buttons button.selected,.choice-buttons button.selected { color:#102016; border-color:var(--lime); background:var(--lime); }
+.choice-buttons.three button { min-width:80px; }
+.price-indication { grid-column:1/-1; padding:12px 13px; border-radius:10px; color:var(--muted); background:rgba(201,244,103,.06); border:1px solid rgba(201,244,103,.14); font-size:10px; line-height:1.6; }
+.price-indication strong { color:var(--lime); }
+.advanced-toggle { display:flex; justify-content:space-between; width:100%; padding:12px 14px; border:1px solid var(--line); border-radius:10px; color:var(--text); background:rgba(255,255,255,.04); font-weight:700; }
+.advanced-fields { display:none; }
+.advanced-fields.visible { display:grid; }
+.simple-result-card { position:sticky; top:18px; padding:28px; }
+.payback-result { margin:20px 0 14px; padding:20px; border-radius:14px; color:#31513b; background:var(--lime); }
+.payback-result small { display:block; font-size:10px; font-weight:700; }
+.payback-result strong { display:block; color:#102016; font:800 36px Manrope; margin-top:3px; }
+.result-grid { display:grid; grid-template-columns:1fr; gap:8px; }
+.result-grid div { padding:13px; border:1px solid var(--line); border-radius:10px; background:rgba(255,255,255,.025); }
+.result-grid span { display:block; color:var(--muted); font-size:9px; margin-bottom:4px; }
+.result-grid strong { font:700 13px Manrope; }
+.result-explanation { margin-top:14px; padding:14px; border-radius:10px; color:var(--muted); background:rgba(255,255,255,.025); font-size:10px; line-height:1.7; }
+.result-warning { color:#ffd55c; font-size:10px; line-height:1.6; margin:12px 0 0; }
+.footer-link { color:var(--lime); text-decoration:none; }
+@media(max-width:850px){.calculator-layout{grid-template-columns:1fr}.simple-result-card{position:static}}
+@media(max-width:600px){fieldset,.result-grid{grid-template-columns:1fr}.simple-form-card,.simple-result-card{padding:19px}}

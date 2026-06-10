@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#071611">
+  <title>Zonlijn</title>
+  <style>
+:root {
+  --bg: #071611;
+  --card: #0d211a;
+  --card-light: #112a21;
+  --line: rgba(255, 255, 255, 0.09);
+  --text: #f4f9f6;
+  --muted: #91a89d;
+  --lime: #c9f467;
+  --green: #55d99b;
+  --yellow: #ffd55c;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "DM Sans", sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.glow {
+  position: fixed; width: 420px; height: 420px; border-radius: 50%;
+  filter: blur(110px); opacity: .11; pointer-events: none; z-index: -1;
+}
+.glow-one { background: var(--lime); top: -180px; right: -100px; }
+.glow-two { background: #0a8f62; bottom: 15%; left: -240px; }
+
+.topbar, main, footer { width: min(1180px, calc(100% - 40px)); margin: auto; }
+.topbar {
+  height: 78px; display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+}
+.brand { color: var(--text); text-decoration: none; display: flex; align-items: center; gap: 11px; font: 800 20px Manrope; }
+.brand-mark {
+  background: var(--lime); color: var(--bg); width: 32px; height: 32px; border-radius: 9px;
+  display: grid; place-items: center; transform: rotate(-8deg);
+}
+.top-actions { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: 13px; }
+.main-nav { display: flex; align-items: center; gap: 5px; padding: 4px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.025); }
+.main-nav a { padding: 7px 11px; border-radius: 8px; color: var(--muted); text-decoration: none; font-size: 11px; font-weight: 700; }
+.main-nav a.active { color: #102016; background: var(--lime); }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 12px var(--green); }
+button { font: inherit; cursor: pointer; }
+.icon-button, .small-button {
+  border: 1px solid var(--line); color: var(--text); background: rgba(255,255,255,.04); border-radius: 9px;
+}
+.icon-button { width: 37px; height: 37px; margin-left: 14px; }
+
+main { padding: 84px 0; }
+.hero { display: grid; grid-template-columns: 1fr 310px; align-items: end; gap: 70px; margin-bottom: 55px; }
+.eyebrow { color: var(--lime); font: 700 11px Manrope; letter-spacing: .18em; }
+h1, h2 { font-family: Manrope, sans-serif; margin: 0; letter-spacing: -.045em; }
+h1 { font-size: clamp(46px, 6vw, 76px); line-height: .99; margin-top: 17px; max-width: 750px; }
+h2 { font-size: 24px; margin-top: 9px; }
+.hero p { color: var(--muted); max-width: 510px; font-size: 17px; line-height: 1.7; margin-top: 22px; }
+.today-card {
+  background: linear-gradient(150deg, #153527, #0c2018); padding: 25px; border: 1px solid var(--line);
+  border-radius: 20px; box-shadow: 0 25px 60px rgba(0,0,0,.22);
+}
+.today-card strong { display: block; font: 800 34px Manrope; margin: 13px 0 16px; }
+.today-range { color: var(--muted); font-size: 10px; margin: -9px 0 13px; }
+.today-value { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 11px; margin: -7px 0 14px; }
+.today-value b { color: var(--lime); font: 700 13px Manrope; }
+.today-line { height: 5px; border-radius: 10px; background: rgba(255,255,255,.08); overflow: hidden; }
+.today-line span { height: 100%; display: block; background: var(--lime); border-radius: inherit; }
+.today-meta { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; margin-top: 12px; }
+.today-note { display: block; color: #718b7e; font-size: 9px; margin-top: 10px; }
+
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 14px; }
+.metric-card, .chart-card, .settings-card {
+  background: rgba(13,33,26,.86); border: 1px solid var(--line); border-radius: 20px;
+}
+.metric-card { min-height: 215px; padding: 22px; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+.metric-card.featured { background: var(--lime); color: #102016; }
+.metric-icon { width: 31px; height: 31px; border-radius: 9px; display: grid; place-items: center; background: rgba(255,255,255,.08); margin-bottom: 24px; }
+.featured .metric-icon { background: rgba(10,30,20,.1); }
+.metric-card > span { color: var(--muted); font-size: 12px; }
+.featured > span, .featured small { color: #4e684e; }
+.metric-card strong { font: 800 30px Manrope; margin-top: 7px; }
+.metric-card small { color: var(--muted); margin-top: 0; }
+.comparison { margin-top: auto; font-size: 11px; font-weight: 600; }
+.comparison.muted { color: var(--muted); }
+.mini-bars { height: 30px; display: flex; gap: 3px; align-items: flex-end; margin-top: auto; }
+.mini-bars i { display: block; width: 7px; background: var(--green); opacity: .7; border-radius: 2px 2px 0 0; }
+.daylight-extremes { display:grid; gap:11px; margin-top:auto; }
+.daylight-extremes div { display:flex; align-items:end; justify-content:space-between; gap:10px; padding-top:9px; border-top:1px solid var(--line); }
+.daylight-extremes small { max-width:120px; color:var(--muted); font-size:9px; line-height:1.4; }
+.daylight-extremes strong { margin:0; font:800 17px Manrope; white-space:nowrap; }
+
+.chart-card { padding: 30px 30px 24px; margin-bottom: 14px; }
+.section-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
+.legend { display: flex; gap: 22px; color: var(--muted); font-size: 12px; padding-top: 13px; }
+.chart-actions { display: flex; align-items: flex-start; gap: 15px; }
+.chart-back { display: none; margin-top: 5px; color: var(--lime); }
+.chart-back.visible { display: block; }
+.legend-line { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 6px; border-radius: 4px; }
+.legend-line.sunlight { background: var(--yellow); }
+.legend-line.production { background: var(--lime); }
+.legend-line.weather { background: #ff9b5e; }
+.weather-legend { display: none; }
+.weather-legend.visible { display: inline; }
+.chart-wrap { height: 330px; position: relative; margin-top: 30px; }
+#yearChart { width: 100%; height: 100%; cursor: crosshair; touch-action: pan-y; }
+.chart-tooltip {
+  display: none; position: absolute; z-index: 4; pointer-events: none; min-width: 175px;
+  background: #f5f9f7; color: #13241b; padding: 12px 14px; border-radius: 12px;
+  font-size: 11px; line-height: 1.7; box-shadow: 0 12px 35px rgba(0,0,0,.35);
+}
+.chart-tooltip.visible { display: block; }
+.chart-tooltip strong { display: block; font: 800 13px Manrope; margin-bottom: 4px; text-transform: capitalize; }
+.chart-tooltip span { display: flex; justify-content: space-between; gap: 18px; color: #53675c; }
+.chart-tooltip b { color: #13241b; }
+.chart-insight {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 15px; border-top: 1px solid var(--line);
+  padding-top: 20px; margin-top: 12px;
+}
+.insight-icon { width: 39px; height: 39px; border-radius: 12px; display: grid; place-items: center; color: var(--lime); background: rgba(201,244,103,.1); }
+.chart-insight strong { font-size: 13px; }
+.chart-insight p { color: var(--muted); font-size: 11px; margin: 4px 0 0; }
+.chart-insight > strong:last-child { font: 800 18px Manrope; color: var(--lime); }
+
+.lower-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.settings-card { padding: 30px; }
+.calculation-note {
+  margin: 18px 0 0;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  color: var(--muted);
+  background: rgba(255,255,255,.025);
+  font-size: .86rem;
+  line-height: 1.55;
+}
+.small-button { padding: 7px 12px; font-size: 11px; }
+#solarForm { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px 14px; margin-top: 28px; }
+.installation {
+  margin-top: 22px; padding: 18px; border-radius: 14px; border: 1px solid var(--line);
+  background: rgba(255,255,255,.025);
+}
+.installation-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 15px; }
+.installation-head strong { font: 700 13px Manrope; }
+.remove-installation {
+  color: #ff9b92; border: 0; background: transparent; font-size: 11px; padding: 5px;
+}
+.installation-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.add-installation-button {
+  width: 100%; margin-top: 12px; padding: 12px; color: var(--lime); background: rgba(201,244,103,.05);
+  border: 1px dashed rgba(201,244,103,.35); border-radius: 11px; font-weight: 700;
+}
+label { display: grid; gap: 8px; color: var(--muted); font-size: 11px; font-weight: 600; }
+input, select {
+  width: 100%; background: rgba(255,255,255,.04); color: var(--text); border: 1px solid var(--line);
+  padding: 12px 13px; border-radius: 10px; outline: none; font: 600 13px "DM Sans";
+}
+input:focus, select:focus { border-color: rgba(201,244,103,.5); }
+input:disabled {
+  cursor: not-allowed; color: #789085; background: rgba(255,255,255,.025);
+  border-color: rgba(255,255,255,.05); opacity: .65;
+}
+label small { color: #718b7e; font-size: 10px; font-weight: 500; line-height: 1.4; }
+.dynamic-cost-field { display: none; }
+.dynamic-cost-field.visible { display: grid; }
+option { background: #10251c; }
+.input-suffix { display: flex; position: relative; }
+.input-suffix span { position: absolute; right: 12px; top: 12px; color: var(--muted); font-size: 12px; }
+.location-button {
+  width: 100%; padding: 13px 16px; border: 1px solid var(--line); border-radius: 11px; margin-top: 18px; font-weight: 700;
+}
+.location-search-label { grid-column: 1 / -1; }
+.location-search { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.location-search button {
+  padding: 0 17px; color: #102016; background: var(--lime); border: 0; border-radius: 10px; font-weight: 700;
+}
+.location-button { color: var(--text); background: transparent; }
+.disclaimer {
+  width: min(1180px, calc(100% - 40px)); margin: 0 auto 18px; padding: 16px 18px; border: 1px solid var(--line);
+  border-radius: 12px; color: #718b7e; background: rgba(255,255,255,.025); font-size: 10px; line-height: 1.6;
+}
+.disclaimer strong { display: block; color: var(--muted); margin-bottom: 4px; }
+.disclaimer p { margin: 0; }
+footer { display: flex; justify-content: space-between; align-items: center; padding: 30px 0 45px; border-top: 1px solid var(--line); color: var(--muted); font-size: 11px; }
+footer > div { display: flex; gap: 12px; }
+.visitor-counter { padding: 5px 9px; border-radius: 20px; color: #718b7e; background: rgba(255,255,255,.035); border: 1px solid var(--line); font-size: 9px; }
+.visitor-counter b { color: var(--muted); }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; }
+  .metrics { grid-template-columns: repeat(2, 1fr); }
+  .lower-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .topbar, main, footer { width: min(100% - 24px, 1180px); }
+  main { padding: 48px 0; }
+  .top-actions > span:not(.status-dot) { display: none; }
+  .main-nav a { padding: 7px; font-size: 9px; }
+  .metrics, #solarForm, .installation-grid { grid-template-columns: 1fr; }
+  .chart-card, .settings-card { padding: 20px; }
+  .section-heading, .legend { flex-direction: column; }
+  .chart-actions { flex-direction: column; }
+  .legend { gap: 10px; }
+  .chart-wrap { height: 280px; }
+  footer, footer > div { align-items: flex-start; flex-direction: column; gap: 8px; }
+}
+
+</style>
+</head>
+<body>
+  <div class="glow glow-one"></div>
+  <div class="glow glow-two"></div>
+  <header class="topbar">
+    <a class="brand" href="#">
+      <span class="brand-mark">Z</span>
+      <span>Zonlijn</span>
+    </a>
+    <nav class="main-nav">
+      <a class="active" href="index.html">Zonnepanelen</a>
+      <a href="Zonlijn-batterij.html">Thuisbatterij</a>
+    </nav>
+    <div class="top-actions">
+      <span class="status-dot"></span>
+      <span id="locationLabel">Utrecht, Nederland</span>
+      <button class="icon-button" id="settingsButton" aria-label="Open instellingen">☰</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <span class="eyebrow">JOUW ZONNEJAAR</span>
+        <h1>Zie wanneer het licht<br>voor je werkt.</h1>
+        <p>Van de eerste zonnestraal tot je hoogste opbrengst. Alles in één rustige lijn.</p>
+      </div>
+      <div class="today-card">
+        <span class="eyebrow">GESCHATTE ZONNIGE DAG VANDAAG</span>
+        <strong id="todayProduction">— kWh</strong>
+        <div class="today-range" id="todayRange">Verwachte bandbreedte: —</div>
+        <div class="today-value">Geschatte waarde <b id="todayValue">€ —</b></div>
+        <div class="today-line"><span id="todayProgress"></span></div>
+        <div class="today-meta">
+          <span id="sunriseToday">↑ —</span>
+          <span id="sunsetToday">↓ —</span>
+        </div>
+        <small class="today-note">Werkelijke opbrengst kan afwijken door weer, temperatuur, schaduw en installatieverlies.</small>
+      </div>
+    </section>
+
+    <section class="metrics">
+      <article class="metric-card featured">
+        <div class="metric-icon">☼</div>
+        <span>Verwachte jaarproductie</span>
+        <strong id="annualProduction">—</strong>
+        <small>kWh per jaar · Nederlandse rekenindicatie</small>
+        <div class="comparison" id="homeCoverage">Vergeleken met 3.500 kWh per jaar</div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-icon">◐</div>
+        <span>Daglicht uitersten</span>
+        <div class="daylight-extremes">
+          <div><small>Langste dag · rond 21 juni</small><strong><span id="longestDay">—</span> uur</strong></div>
+          <div><small>Kortste dag · rond 21 december</small><strong><span id="shortestDay">—</span> uur</strong></div>
+        </div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-icon">€</div>
+        <span>Geschatte financiële waarde</span>
+        <strong id="annualSavings">—</strong>
+        <small>per jaar</small>
+          <div class="comparison muted" id="priceSummary">Bij € 0,30 per kWh</div>
+      </article>
+    </section>
+
+    <section class="chart-card">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" id="chartEyebrow">12 MAANDEN</span>
+          <h2 id="chartTitle">Licht en opbrengst door het jaar</h2>
+        </div>
+        <div class="chart-actions">
+          <button class="small-button chart-back" id="chartBackButton">← Terug naar jaar</button>
+          <div class="legend">
+            <span><i class="legend-line sunlight"></i> Daglicht</span>
+            <span><i class="legend-line production"></i> Productie</span>
+            <span class="weather-legend" id="weatherLegend"><i class="legend-line weather"></i> Weerhistorie vorig jaar (modeldata)</span>
+          </div>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="yearChart"></canvas>
+        <div class="chart-tooltip" id="chartTooltip"></div>
+      </div>
+      <div class="chart-insight">
+        <span class="insight-icon">✦</span>
+        <div>
+          <strong>Jouw beste zonnemaand is <span id="bestMonth">—</span></strong>
+          <p>In deze maand produceren je panelen naar verwachting het meest.</p>
+        </div>
+        <strong id="bestMonthYield">— kWh</strong>
+      </div>
+    </section>
+
+    <section class="lower-grid">
+      <article class="settings-card" id="settings">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">JOUW INSTALLATIE</span>
+            <h2>Reken met jouw dak</h2>
+          </div>
+          <button class="small-button" id="resetButton">Herstel</button>
+        </div>
+        <div id="installations"></div>
+        <button class="add-installation-button" id="addInstallationButton">+ Extra panelen toevoegen</button>
+        <form id="solarForm">
+          <label class="location-search-label">
+            Adres, plaats of postcode
+            <div class="location-search">
+              <input type="search" id="locationSearch" placeholder="Bijvoorbeeld Dorpsstraat 10, Utrecht">
+              <button type="button" id="locationSearchButton">Zoeken</button>
+            </div>
+            <small id="locationSearchMessage">Vul een adres met huisnummer in om ook de straatnaam te zien.</small>
+          </label>
+          <label>
+            Breedtegraad
+            <div class="input-suffix"><input type="number" id="latitude" min="-65" max="65" step="0.01" value="52.09"><span>°</span></div>
+          </label>
+          <label>
+            Lengtegraad
+            <div class="input-suffix"><input type="number" id="longitude" min="-180" max="180" step="0.01" value="5.12"><span>°</span></div>
+          </label>
+          <label>
+            Energiecontract
+            <select id="contractType">
+              <option value="vast">Vast / variabel contract</option>
+              <option value="dynamisch">Dynamisch contract</option>
+            </select>
+          </label>
+          <label>
+            Gemiddelde waarde per opgewekte kWh
+            <div class="input-suffix"><input type="text" inputmode="decimal" id="energyPrice" value="0,30" aria-label="Waarde per opgewekte kilowattuur"><span>€</span></div>
+            <small id="energyPriceHelp">Vul zelf een gemiddelde waarde in, inclusief relevante belasting en leveranciersopslag.</small>
+          </label>
+        </form>
+        <p class="calculation-note">De jaaropbrengst is een indicatieve Nederlandse berekening op basis van 875 kWh per kWp bij een gunstige opstelling. De ingevulde locatie verandert de daglicht- en weerinformatie, maar nog niet de jaaropbrengstberekening. Weer, omvormer, temperatuur, vervuiling en kabelverliezen kunnen de werkelijke opbrengst veranderen. De financiële waarde per opgewekte kWh verschilt door zelfverbruik, teruglevering en jouw contract.</p>
+        <button class="location-button" id="locationButton">⌖ Gebruik mijn huidige locatie</button>
+      </article>
+    </section>
+  </main>
+
+  <aside class="disclaimer">
+    <strong>Disclaimer</strong>
+    <p>Alle opbrengsten, prijzen, besparingen, daglichtgegevens en andere resultaten in Zonlijn zijn indicatieve schattingen. Werkelijke resultaten kunnen afwijken door onder andere weer, locatie, installatie, energiecontract, belastingen en wijzigingen bij leveranciers. Controleer belangrijke gegevens altijd bij een erkende installateur, energieleverancier of andere deskundige. Aan deze berekeningen kunnen geen rechten worden ontleend.</p>
+  </aside>
+
+  <footer>
+    <div>
+      <strong>Zonlijn</strong>
+      <span>Een heldere kijk op jouw zonne-energie.</span>
+    </div>
+    <span class="visitor-counter" id="visitorCounter" title="Deze testteller telt alleen bezoeken op dit apparaat">◉ <b>—</b> lokale testbezoeken</span>
+  </footer>
+
+  <script>
+const months = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec"];
+const longMonths = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
+const defaultInstallation = { name: "Installatie 1", panelCount: 10, panelWp: 430, orientation: 1, tilt: 35, shade: 1 };
+const defaultSettings = { latitude: 52.09, longitude: 5.12, contractType: "vast", energyPrice: .30, installations: [defaultInstallation] };
+let installations = [];
+let data = [];
+let fixedEnergyPrice = defaultSettings.energyPrice;
+let chartMonth = null;
+let historicWeather = {};
+let weatherLoading = false;
+let selectedLocationName = "";
+
+const $ = id => document.getElementById(id);
+const formIds = ["latitude", "longitude", "contractType", "energyPrice"];
+
+function updateVisitorCounter() {
+  const key = "zonlijnLocalVisits";
+  const visits = Number(localStorage.getItem(key) || 0) + 1;
+  localStorage.setItem(key, String(visits));
+  $("visitorCounter").querySelector("b").textContent = visits.toLocaleString("nl-NL");
+}
+
+function daylightHours(dayOfYear, latitude) {
+  const lat = latitude * Math.PI / 180;
+  const declination = -23.44 * Math.cos((2 * Math.PI / 365) * (dayOfYear + 10)) * Math.PI / 180;
+  return 24 * Math.acos(Math.max(-1, Math.min(1, -Math.tan(lat) * Math.tan(declination)))) / Math.PI;
+}
+
+function formatTime(decimalHour) {
+  let h = Math.floor(decimalHour), m = Math.round((decimalHour - h) * 60);
+  if (m === 60) { h++; m = 0; }
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+function installationTemplate(item, index) {
+  const options = values => values.map(([value, label]) => `<option value="${value}" ${String(item.orientation) === String(value) ? "selected" : ""}>${label}</option>`).join("");
+  return `<article class="installation" data-index="${index}">
+    <div class="installation-head">
+      <strong>${item.name || `Installatie ${index + 1}`}</strong>
+      ${installations.length > 1 ? `<button class="remove-installation" data-remove="${index}">Verwijderen</button>` : ""}
+    </div>
+    <div class="installation-grid">
+      <label>Naam<input data-field="name" value="${item.name || `Installatie ${index + 1}`}"></label>
+      <label>Aantal panelen<input type="number" min="1" max="500" data-field="panelCount" value="${item.panelCount}"></label>
+      <label>Vermogen per paneel<div class="input-suffix"><input type="number" min="100" max="800" step="5" data-field="panelWp" value="${item.panelWp}"><span>Wp</span></div></label>
+      <label>Richting van het dak<select data-field="orientation">${options([
+        [1,"Zuid"],
+        [.96,"Zuidoost"],
+        [.96,"Zuidwest"],
+        [.88,"Oost"],
+        [.88,"West"],
+        [.90,"Oost / West"],
+        [.72,"Noord"]
+      ])}</select></label>
+      <label>Hellingshoek panelen<div class="input-suffix"><input type="number" min="0" max="90" step="1" data-field="tilt" value="${item.tilt}"><span>°</span></div></label>
+      <label>Schaduw<select data-field="shade">
+        <option value="1" ${item.shade == 1 ? "selected" : ""}>Geen schaduw</option>
+        <option value=".92" ${item.shade == .92 ? "selected" : ""}>Een beetje schaduw</option>
+        <option value=".8" ${item.shade == .8 ? "selected" : ""}>Regelmatig schaduw</option>
+        <option value=".65" ${item.shade == .65 ? "selected" : ""}>Veel schaduw</option>
+      </select></label>
+    </div>
+  </article>`;
+}
+
+function renderInstallations() {
+  $("installations").innerHTML = installations.map(installationTemplate).join("");
+  $("installations").querySelectorAll("input, select").forEach(input => input.addEventListener("input", event => {
+    const card = event.target.closest(".installation");
+    const field = event.target.dataset.field;
+    installations[+card.dataset.index][field] = field === "name" ? event.target.value : +event.target.value;
+    if (field === "name") card.querySelector("strong").textContent = event.target.value;
+    calculate();
+  }));
+  $("installations").querySelectorAll("[data-remove]").forEach(button => button.addEventListener("click", () => {
+    installations.splice(+button.dataset.remove, 1);
+    renderInstallations();
+    calculate();
+  }));
+}
+
+function getSettings() {
+  return {
+    latitude: +$("latitude").value,
+    longitude: +$("longitude").value,
+    contractType: $("contractType").value,
+    energyPrice: fixedEnergyPrice,
+    locationName: selectedLocationName,
+    installations
+  };
+}
+
+function parseDutchNumber(value) {
+  const parsed = Number(String(value).trim().replace(",", "."));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function tiltFactor(tilt) {
+  const safeTilt = Math.max(0, Math.min(90, Number(tilt) || 0));
+  const difference = Math.abs(safeTilt - 35);
+  return Math.max(.72, 1 - Math.pow(difference / 90, 1.55) * .38);
+}
+
+function orientationFactor(orientation, tilt) {
+  const directionLoss = 1 - Math.max(.5, Math.min(1, Number(orientation) || 1));
+  const tiltInfluence = Math.min(1, Math.sin(Math.max(0, Math.min(90, tilt)) * Math.PI / 180) / Math.sin(35 * Math.PI / 180));
+  return 1 - directionLoss * tiltInfluence;
+}
+
+function solarNoon(dayOfYear, longitude) {
+  const now = new Date();
+  const timezoneHours = -now.getTimezoneOffset() / 60;
+  const b = 2 * Math.PI * (dayOfYear - 81) / 364;
+  const equationOfTimeMinutes = 9.87 * Math.sin(2 * b) - 7.53 * Math.cos(b) - 1.5 * Math.sin(b);
+  return 12 + timezoneHours - longitude / 15 - equationOfTimeMinutes / 60;
+}
+
+function calculate() {
+  const s = getSettings();
+  const systemKwp = installations.reduce((sum, item) => sum + item.panelCount * item.panelWp / 1000, 0);
+  const annual = installations.reduce((sum, item) => sum + item.panelCount * item.panelWp / 1000 * 875 * orientationFactor(item.orientation, item.tilt) * tiltFactor(item.tilt) * item.shade, 0);
+  const monthlyWeights = [.025,.045,.085,.115,.14,.145,.14,.125,.09,.055,.025,.01];
+  const middleDays = [15,46,74,105,135,166,196,227,258,288,319,349];
+  data = months.map((month, i) => ({ month, daylight: daylightHours(middleDays[i], s.latitude), production: annual * monthlyWeights[i] }));
+
+  const today = new Date(), start = new Date(today.getFullYear(), 0, 0);
+  const dayNumber = Math.floor((today - start) / 86400000);
+  const todayLight = daylightHours(dayNumber, s.latitude);
+  const daysThisMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+  const currentMonthAverage = data[today.getMonth()].production / daysThisMonth;
+  const sunnyDayFactor = 1.18;
+  const physicalSunnyDayLimit = systemKwp * 6.2;
+  const todayYield = Math.min(currentMonthAverage * sunnyDayFactor, physicalSunnyDayLimit);
+  const best = data.reduce((max, item, i) => item.production > data[max].production ? i : max, 0);
+  const isDynamic = s.contractType === "dynamisch";
+  const energyValue = annual * fixedEnergyPrice;
+  const todayPrice = fixedEnergyPrice;
+  const todayValue = todayYield * todayPrice;
+  const todayLow = todayYield * .88;
+  const todayHigh = todayYield * 1.12;
+
+  $("energyPrice").disabled = false;
+  $("energyPriceHelp").textContent = isDynamic
+    ? "Dynamische uurprijzen wisselen sterk. Vul zelf een gemiddelde waarde per opgewekte kWh in."
+    : "Vul zelf een gemiddelde waarde in, inclusief relevante belasting en leveranciersopslag.";
+
+  $("annualProduction").textContent = Math.round(annual).toLocaleString("nl-NL");
+  $("longestDay").textContent = daylightHours(172, s.latitude).toLocaleString("nl-NL", { maximumFractionDigits: 1 });
+  $("shortestDay").textContent = daylightHours(355, s.latitude).toLocaleString("nl-NL", { maximumFractionDigits: 1 });
+  $("annualSavings").textContent = `€ ${Math.round(energyValue).toLocaleString("nl-NL")}`;
+  $("priceSummary").textContent = `${isDynamic ? "Dynamische" : "Vast / variabel"} ingestelde gemiddelde waarde: € ${fixedEnergyPrice.toFixed(3).replace(".", ",")} per kWh`;
+  $("homeCoverage").textContent = `${Math.round(annual / 35)}% van 3.500 kWh per jaar`;
+  $("todayProduction").textContent = `${todayYield.toLocaleString("nl-NL", { maximumFractionDigits: 1 })} kWh`;
+  $("todayRange").textContent = `Verwachte bandbreedte: ${todayLow.toLocaleString("nl-NL", { maximumFractionDigits: 1 })}–${todayHigh.toLocaleString("nl-NL", { maximumFractionDigits: 1 })} kWh`;
+  $("todayValue").textContent = `€ ${todayValue.toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  $("todayProgress").style.width = `${Math.min(100, todayYield / physicalSunnyDayLimit * 100)}%`;
+  const noon = solarNoon(dayNumber, s.longitude);
+  $("sunriseToday").textContent = `↑ circa ${formatTime(noon - todayLight / 2)}`;
+  $("sunsetToday").textContent = `↓ circa ${formatTime(noon + todayLight / 2)}`;
+  $("bestMonth").textContent = longMonths[best];
+  $("bestMonthYield").textContent = `${Math.round(data[best].production)} kWh`;
+  $("locationLabel").textContent = selectedLocationName || `${s.latitude.toFixed(2)}°, ${s.longitude.toFixed(2)}°`;
+  localStorage.setItem("zonlijnSettingsV2", JSON.stringify(s));
+  drawChart();
+}
+
+function getChartData() {
+  if (chartMonth === null) return data.map((item, index) => ({ ...item, label: months[index], title: longMonths[index], priceIndex: index }));
+  const year = new Date().getFullYear();
+  const days = new Date(year, chartMonth + 1, 0).getDate();
+  const firstDayNumber = Math.floor((new Date(year, chartMonth, 1) - new Date(year, 0, 0)) / 86400000);
+  const monthProduction = data[chartMonth].production;
+  const factors = Array.from({ length: days }, (_, i) => .82 + .22 * Math.sin((i + 1) * 1.7) + .12 * Math.cos((i + 1) * .63));
+  const factorTotal = factors.reduce((sum, factor) => sum + factor, 0);
+  return factors.map((factor, i) => ({
+    label: String(i + 1),
+    title: `${i + 1} ${longMonths[chartMonth]}`,
+    daylight: daylightHours(firstDayNumber + i, +$("latitude").value),
+    production: monthProduction * factor / factorTotal,
+    priceIndex: chartMonth,
+    sunshine: historicWeather[chartMonth]?.[i]?.sunshine ?? null,
+    cloudCover: historicWeather[chartMonth]?.[i]?.cloudCover ?? null,
+    weatherYear: historicWeather[chartMonth]?.[i]?.year ?? null
+  }));
+}
+
+function drawChart() {
+  const chartData = getChartData();
+  const canvas = $("yearChart"), ratio = window.devicePixelRatio || 1, rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width * ratio; canvas.height = rect.height * ratio;
+  const ctx = canvas.getContext("2d"); ctx.scale(ratio, ratio);
+  const w = rect.width, h = rect.height, pad = { top:15, right:18, bottom:35, left:25 }, cw = w-pad.left-pad.right, ch = h-pad.top-pad.bottom;
+  const maxProduction = Math.max(...chartData.map(d => d.production)) * 1.12 || 1;
+  ctx.strokeStyle = "rgba(255,255,255,.07)";
+  for (let i=0;i<5;i++) { const y=pad.top+ch/4*i; ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(w-pad.right,y);ctx.stroke(); }
+  ctx.font="11px DM Sans";ctx.fillStyle="#718b7e";ctx.textAlign="center";
+  const denominator = Math.max(1, chartData.length - 1);
+  chartData.forEach((d,i)=>{if(chartMonth===null||i===0||i===chartData.length-1||(i+1)%5===0)ctx.fillText(d.label,pad.left+cw/denominator*i,h-10);});
+  const line=(key,max,color,fill)=>{const points=chartData.map((d,i)=>({x:pad.left+cw/denominator*i,y:pad.top+ch-d[key]/max*ch}));ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.stroke();if(fill){const g=ctx.createLinearGradient(0,pad.top,0,h);g.addColorStop(0,"rgba(201,244,103,.18)");g.addColorStop(1,"rgba(201,244,103,0)");ctx.lineTo(points.at(-1).x,pad.top+ch);ctx.lineTo(points[0].x,pad.top+ch);ctx.closePath();ctx.fillStyle=g;ctx.fill();}points.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,chartMonth===null?3:2,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();});};
+  line("production",maxProduction,"#c9f467",true);line("daylight",18,"#ffd55c",false);
+  if (chartMonth !== null && chartData.some(item => item.sunshine !== null)) line("sunshine",18,"#ff9b5e",false);
+}
+
+function showChartTooltip(event) {
+  const chartData = getChartData();
+  const canvas = $("yearChart"), tooltip = $("chartTooltip"), rect = canvas.getBoundingClientRect();
+  const x = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
+  const chartLeft = 25, chartRight = rect.width - 18;
+  const index = Math.max(0, Math.min(chartData.length - 1, Math.round((x - chartLeft) / (chartRight - chartLeft) * (chartData.length - 1))));
+  const item = chartData[index];
+  const isDynamic = $("contractType").value === "dynamisch";
+  const price = fixedEnergyPrice;
+  const value = item.production * price;
+
+  tooltip.innerHTML = `
+    <strong>${item.title}</strong>
+    <span>Daglicht <b>${item.daylight.toLocaleString("nl-NL", { maximumFractionDigits: 1 })} uur</b></span>
+    ${item.sunshine !== null ? `<span>Zonuren in ${item.weatherYear} <b>${item.sunshine.toLocaleString("nl-NL", { maximumFractionDigits: 1 })} uur</b></span>
+    <span>Bewolking in ${item.weatherYear} <b>${Math.round(item.cloudCover)}%</b></span>` : chartMonth !== null ? `<span>Weerhistorie <b>${weatherLoading ? "laden..." : "niet beschikbaar"}</b></span>` : ""}
+    <span>Productie <b>${Math.round(item.production).toLocaleString("nl-NL")} kWh</b></span>
+    <span>Ingestelde gemiddelde waarde <b>€ ${price.toFixed(3).replace(".", ",")}</b></span>
+    <span>Waarde <b>€ ${Math.round(value).toLocaleString("nl-NL")}</b></span>`;
+  tooltip.classList.add("visible");
+
+  const tooltipWidth = 190;
+  tooltip.style.left = `${Math.max(5, Math.min(rect.width - tooltipWidth, x + 14))}px`;
+  tooltip.style.top = `${Math.max(5, event.clientY - rect.top - 95)}px`;
+}
+
+async function loadHistoricWeather(month) {
+  if (historicWeather[month] || weatherLoading) return;
+  weatherLoading = true;
+  const year = new Date().getFullYear() - 1;
+  const start = `${year}-${String(month + 1).padStart(2, "0")}-01`;
+  const lastDay = new Date(year, month + 1, 0).getDate();
+  const end = `${year}-${String(month + 1).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+  const url = new URL("https://archive-api.open-meteo.com/v1/archive");
+  url.search = new URLSearchParams({
+    latitude: $("latitude").value,
+    longitude: $("longitude").value,
+    start_date: start,
+    end_date: end,
+    daily: "sunshine_duration,cloud_cover_mean",
+    timezone: "auto"
+  });
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("Weerhistorie niet beschikbaar");
+    const result = await response.json();
+    historicWeather[month] = result.daily.time.map((_, i) => ({
+      sunshine: (result.daily.sunshine_duration[i] || 0) / 3600,
+      cloudCover: result.daily.cloud_cover_mean[i] || 0,
+      year
+    }));
+  } catch (_) {
+    historicWeather[month] = [];
+  } finally {
+    weatherLoading = false;
+    if (chartMonth === month) drawChart();
+  }
+}
+
+async function searchLocation() {
+  const query = $("locationSearch").value.trim();
+  const message = $("locationSearchMessage");
+  if (query.length < 2) {
+    message.textContent = "Vul minimaal twee letters of cijfers in.";
+    return;
+  }
+
+  message.textContent = "Adres of plaats zoeken...";
+  try {
+    const addressUrl = new URL("https://nominatim.openstreetmap.org/search");
+    addressUrl.search = new URLSearchParams({
+      q: query,
+      format: "jsonv2",
+      addressdetails: "1",
+      limit: "1",
+      countrycodes: "nl",
+      "accept-language": "nl"
+    });
+    const addressResponse = await fetch(addressUrl);
+    const addressResults = addressResponse.ok ? await addressResponse.json() : [];
+    let latitude, longitude;
+
+    if (addressResults[0]) {
+      const result = addressResults[0];
+      const address = result.address || {};
+      const street = address.road || address.pedestrian || address.residential || address.footway;
+      const city = address.city || address.town || address.village || address.municipality;
+      selectedLocationName = [
+        [street, address.house_number].filter(Boolean).join(" "),
+        address.postcode,
+        city
+      ].filter(Boolean).join(", ") || result.display_name;
+      latitude = +result.lat;
+      longitude = +result.lon;
+    } else {
+      const placeUrl = new URL("https://geocoding-api.open-meteo.com/v1/search");
+      placeUrl.search = new URLSearchParams({ name: query, count: "1", language: "nl", format: "json" });
+      const placeResponse = await fetch(placeUrl);
+      const placeData = placeResponse.ok ? await placeResponse.json() : {};
+      const place = placeData.results?.[0];
+      if (!place) throw new Error("Geen adres of plaats gevonden. Voeg eventueel een huisnummer en woonplaats toe.");
+      selectedLocationName = [place.name, place.admin1, place.country].filter(Boolean).join(", ");
+      latitude = place.latitude;
+      longitude = place.longitude;
+    }
+
+    $("latitude").value = latitude.toFixed(5);
+    $("longitude").value = longitude.toFixed(5);
+    historicWeather = {};
+    message.textContent = `Actieve locatie: ${selectedLocationName}`;
+    calculate();
+    if (chartMonth !== null) await loadHistoricWeather(chartMonth);
+  } catch (error) {
+    message.textContent = error.message;
+  }
+}
+
+async function zoomChart(event) {
+  if (chartMonth !== null) return;
+  const rect = $("yearChart").getBoundingClientRect();
+  const x = Math.max(0, Math.min(rect.width, event.clientX - rect.left));
+  chartMonth = Math.max(0, Math.min(11, Math.round((x - 25) / (rect.width - 43) * 11)));
+  $("chartEyebrow").textContent = `DAGEN · WEERHISTORIE ${new Date().getFullYear() - 1}`;
+  $("chartTitle").textContent = `Dagoverzicht van ${longMonths[chartMonth]}`;
+  $("chartBackButton").classList.add("visible");
+  $("weatherLegend").classList.add("visible");
+  $("chartTooltip").classList.remove("visible");
+  drawChart();
+  await loadHistoricWeather(chartMonth);
+}
+
+function restoreSettings() {
+  const saved = JSON.parse(localStorage.getItem("zonlijnSettingsV2") || "null") || defaultSettings;
+  selectedLocationName = saved.locationName || "";
+  fixedEnergyPrice = saved.energyPrice ?? defaultSettings.energyPrice;
+  installations = saved.installations.map(item => ({ ...defaultInstallation, ...item }));
+  formIds.forEach(id => $(id).value = saved[id]);
+  $("energyPrice").value = fixedEnergyPrice.toFixed(3).replace(".", ",");
+  renderInstallations();
+}
+
+formIds.forEach(id => $(id).addEventListener("input", event => {
+  if (event.target.id === "energyPrice") {
+    const parsed = parseDutchNumber(event.target.value);
+    if (parsed !== null && parsed >= 0 && parsed <= 5) fixedEnergyPrice = parsed;
+  }
+  if (event.target.id === "latitude" || event.target.id === "longitude") { historicWeather = {}; selectedLocationName = ""; }
+  calculate();
+}));
+$("contractType").addEventListener("change", () => $("energyPrice").value = fixedEnergyPrice.toFixed(3).replace(".", ","));
+$("energyPrice").addEventListener("blur", () => {
+  $("energyPrice").value = fixedEnergyPrice.toFixed(3).replace(".", ",");
+});
+$("addInstallationButton").addEventListener("click", () => {
+  installations.push({ ...defaultInstallation, name: `Installatie ${installations.length + 1}` });
+  renderInstallations(); calculate();
+});
+$("resetButton").addEventListener("click", () => { localStorage.removeItem("zonlijnSettingsV2"); fixedEnergyPrice=defaultSettings.energyPrice;selectedLocationName="";historicWeather={};$("locationSearch").value="";$("locationSearchMessage").textContent="Vul een adres met huisnummer in om ook de straatnaam te zien.";installations = [{...defaultInstallation}]; formIds.forEach(id => $(id).value = defaultSettings[id]); renderInstallations(); calculate(); });
+$("settingsButton").addEventListener("click", () => $("settings").scrollIntoView({ behavior:"smooth", block:"center" }));
+$("locationButton").addEventListener("click", () => navigator.geolocation?.getCurrentPosition(pos => { selectedLocationName="Mijn huidige locatie";historicWeather={};$("latitude").value=pos.coords.latitude.toFixed(2);$("longitude").value=pos.coords.longitude.toFixed(2);calculate(); }, () => $("locationLabel").textContent="Locatie niet toegestaan"));
+$("locationSearchButton").addEventListener("click", searchLocation);
+$("locationSearch").addEventListener("keydown", event => { if (event.key === "Enter") { event.preventDefault(); searchLocation(); } });
+$("yearChart").addEventListener("pointermove", showChartTooltip);
+$("yearChart").addEventListener("click", zoomChart);
+$("yearChart").addEventListener("pointerleave", () => $("chartTooltip").classList.remove("visible"));
+$("chartBackButton").addEventListener("click", () => {
+  chartMonth = null;
+  $("chartEyebrow").textContent = "12 MAANDEN";
+  $("chartTitle").textContent = "Licht en opbrengst door het jaar";
+  $("chartBackButton").classList.remove("visible");
+  $("weatherLegend").classList.remove("visible");
+  drawChart();
+});
+window.addEventListener("resize",drawChart);
+restoreSettings();calculate();updateVisitorCounter();
+
+</script>
+</body>
+</html>
