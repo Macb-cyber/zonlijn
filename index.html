@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#071611">
+  <title>Zonlijn</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="glow glow-one"></div>
+  <div class="glow glow-two"></div>
+  <header class="topbar">
+    <a class="brand" href="#">
+      <span class="brand-mark">Z</span>
+      <span>Zonlijn</span>
+    </a>
+    <div class="top-actions">
+      <span class="status-dot"></span>
+      <span id="locationLabel">Utrecht, Nederland</span>
+      <button class="icon-button" id="settingsButton" aria-label="Open instellingen">☰</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <span class="eyebrow">JOUW ZONNEJAAR</span>
+        <h1>Zie wanneer het licht<br>voor je werkt.</h1>
+        <p>Van de eerste zonnestraal tot je hoogste opbrengst. Alles in één rustige lijn.</p>
+      </div>
+      <div class="today-card">
+        <span class="eyebrow">VANDAAG</span>
+        <strong id="todayProduction">— kWh</strong>
+        <div class="today-line"><span id="todayProgress"></span></div>
+        <div class="today-meta">
+          <span id="sunriseToday">↑ —</span>
+          <span id="sunsetToday">↓ —</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="metrics">
+      <article class="metric-card featured">
+        <div class="metric-icon">☼</div>
+        <span>Verwachte jaarproductie</span>
+        <strong id="annualProduction">—</strong>
+        <small>kWh per jaar</small>
+        <div class="comparison" id="homeCoverage">Goed voor —% van een gemiddeld huis</div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-icon">↗</div>
+        <span>Hoogste vermogen</span>
+        <strong id="peakPower">—</strong>
+        <small>kW piekvermogen</small>
+        <div class="mini-bars" id="powerBars"></div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-icon">◐</div>
+        <span>Langste dag</span>
+        <strong id="longestDay">—</strong>
+        <small>uur daglicht</small>
+        <div class="comparison muted">Rond 21 juni</div>
+      </article>
+      <article class="metric-card">
+        <div class="metric-icon">€</div>
+        <span>Geschatte besparing</span>
+        <strong id="annualSavings">—</strong>
+        <small>per jaar</small>
+          <div class="comparison muted" id="priceSummary">Bij € 0,30 per kWh</div>
+      </article>
+    </section>
+
+    <section class="chart-card">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow" id="chartEyebrow">12 MAANDEN</span>
+          <h2 id="chartTitle">Licht en opbrengst door het jaar</h2>
+        </div>
+        <div class="chart-actions">
+          <button class="small-button chart-back" id="chartBackButton">← Terug naar jaar</button>
+          <div class="legend">
+            <span><i class="legend-line sunlight"></i> Daglicht</span>
+            <span><i class="legend-line production"></i> Productie</span>
+            <span class="weather-legend" id="weatherLegend"><i class="legend-line weather"></i> Historische zonuren</span>
+          </div>
+        </div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="yearChart"></canvas>
+        <div class="chart-tooltip" id="chartTooltip"></div>
+      </div>
+      <div class="chart-insight">
+        <span class="insight-icon">✦</span>
+        <div>
+          <strong>Jouw beste zonnemaand is <span id="bestMonth">—</span></strong>
+          <p>In deze maand produceren je panelen naar verwachting het meest.</p>
+        </div>
+        <strong id="bestMonthYield">— kWh</strong>
+      </div>
+    </section>
+
+    <section class="lower-grid">
+      <article class="settings-card" id="settings">
+        <div class="section-heading">
+          <div>
+            <span class="eyebrow">JOUW INSTALLATIE</span>
+            <h2>Reken met jouw dak</h2>
+          </div>
+          <button class="small-button" id="resetButton">Herstel</button>
+        </div>
+        <div id="installations"></div>
+        <button class="add-installation-button" id="addInstallationButton">+ Extra panelen toevoegen</button>
+        <form id="solarForm">
+          <label class="location-search-label">
+            Plaats of postcode
+            <div class="location-search">
+              <input type="search" id="locationSearch" placeholder="Bijvoorbeeld Utrecht of 9711">
+              <button type="button" id="locationSearchButton">Zoeken</button>
+            </div>
+            <small id="locationSearchMessage">Kies zelf de plaats waarvoor je wilt rekenen.</small>
+          </label>
+          <label>
+            Breedtegraad
+            <div class="input-suffix"><input type="number" id="latitude" min="-65" max="65" step="0.01" value="52.09"><span>°</span></div>
+          </label>
+          <label>
+            Lengtegraad
+            <div class="input-suffix"><input type="number" id="longitude" min="-180" max="180" step="0.01" value="5.12"><span>°</span></div>
+          </label>
+          <label>
+            Energiecontract
+            <select id="contractType">
+              <option value="vast">Vast / variabel contract</option>
+              <option value="dynamisch">Dynamisch contract</option>
+            </select>
+          </label>
+          <label>
+            Waarde per opgewekte kWh
+            <div class="input-suffix"><input type="text" inputmode="decimal" id="energyPrice" value="0,30" aria-label="Waarde per opgewekte kilowattuur"><span>€</span></div>
+            <small id="energyPriceHelp">Vul je eigen stroomprijs in.</small>
+          </label>
+        </form>
+        <button class="location-button" id="locationButton">⌖ Gebruik mijn huidige locatie</button>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <strong>Zonlijn</strong>
+    <span>Een heldere kijk op jouw zonne-energie.</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
