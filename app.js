@@ -2,9 +2,6 @@ const months = ["jan", "feb", "mrt", "apr", "mei", "jun", "jul", "aug", "sep", "
 const longMonths = ["januari", "februari", "maart", "april", "mei", "juni", "juli", "augustus", "september", "oktober", "november", "december"];
 const defaultInstallation = { name: "Installatie 1", panelCount: 10, panelWp: 430, orientation: 1, tilt: 35, shade: 1 };
 const defaultSettings = { latitude: 52.09, longitude: 5.12, contractType: "vast", energyPrice: .30, installations: [defaultInstallation] };
-// Historische Nederlandse dynamische marktprijzen per maand, gebruikt als referentieprofiel.
-// Bedragen zijn euro per kWh en exclusief belastingen en leveranciersopslag.
-const historicDynamicPrices = [.103,.111,.086,.064,.052,.058,.071,.079,.083,.092,.105,.098];
 let installations = [];
 let data = [];
 let fixedEnergyPrice = defaultSettings.energyPrice;
@@ -15,6 +12,13 @@ let selectedLocationName = "";
 
 const $ = id => document.getElementById(id);
 const formIds = ["latitude", "longitude", "contractType", "energyPrice"];
+
+function updateVisitorCounter() {
+  const key = "zonlijnLocalVisits";
+  const visits = Number(localStorage.getItem(key) || 0) + 1;
+  localStorage.setItem(key, String(visits));
+  $("visitorCounter").querySelector("b").textContent = visits.toLocaleString("nl-NL");
+}
 
 function daylightHours(dayOfYear, latitude) {
   const lat = latitude * Math.PI / 180;
@@ -39,7 +43,15 @@ function installationTemplate(item, index) {
       <label>Naam<input data-field="name" value="${item.name || `Installatie ${index + 1}`}"></label>
       <label>Aantal panelen<input type="number" min="1" max="500" data-field="panelCount" value="${item.panelCount}"></label>
       <label>Vermogen per paneel<div class="input-suffix"><input type="number" min="100" max="800" step="5" data-field="panelWp" value="${item.panelWp}"><span>Wp</span></div></label>
-      <label>Richting van het dak<select data-field="orientation">${options([[1,"Zuid"],[.95,"Zuidoost / Zuidwest"],[.85,"Oost / West"],[.72,"Noord"]])}</select></label>
+      <label>Richting van het dak<select data-field="orientation">${options([
+        [1,"Zuid"],
+        [.96,"Zuidoost"],
+        [.96,"Zuidwest"],
+        [.88,"Oost"],
+        [.88,"West"],
+        [.90,"Oost / West"],
+        [.72,"Noord"]
+      ])}</select></label>
       <label>Hellingshoek panelen<div class="input-suffix"><input type="number" min="0" max="90" step="1" data-field="tilt" value="${item.tilt}"><span>°</span></div></label>
       <label>Schaduw<select data-field="shade">
         <option value="1" ${item.shade == 1 ? "selected" : ""}>Geen schaduw</option>
@@ -89,10 +101,24 @@ function tiltFactor(tilt) {
   return Math.max(.72, 1 - Math.pow(difference / 90, 1.55) * .38);
 }
 
+function orientationFactor(orientation, tilt) {
+  const directionLoss = 1 - Math.max(.5, Math.min(1, Number(orientation) || 1));
+  const tiltInfluence = Math.min(1, Math.sin(Math.max(0, Math.min(90, tilt)) * Math.PI / 180) / Math.sin(35 * Math.PI / 180));
+  return 1 - directionLoss * tiltInfluence;
+}
+
+function solarNoon(dayOfYear, longitude) {
+  const now = new Date();
+  const timezoneHours = -now.getTimezoneOffset() / 60;
+  const b = 2 * Math.PI * (dayOfYear - 81) / 364;
+  const equationOfTimeMinutes = 9.87 * Math.sin(2 * b) - 7.53 * Math.cos(b) - 1.5 * Math.sin(b);
+  return 12 + timezoneHours - longitude / 15 - equationOfTimeMinutes / 60;
+}
+
 function calculate() {
   const s = getSettings();
   const systemKwp = installations.reduce((sum, item) => sum + item.panelCount * item.panelWp / 1000, 0);
-  const annual = installations.reduce((sum, item) => sum + item.panelCount * item.panelWp / 1000 * 875 * item.orientation * tiltFactor(item.tilt) * item.shade, 0);
+  const annual = installations.reduce((sum, item) => sum + item.panelCount * item.panelWp / 1000 * 875 * orientationFactor(item.orientation, item.tilt) * tiltFactor(item.tilt) * item.shade, 0);
   const monthlyWeights = [.025,.045,.085,.115,.14,.145,.14,.125,.09,.055,.025,.01];
   const middleDays = [15,46,74,105,135,166,196,227,258,288,319,349];
   data = months.map((month, i) => ({ month, daylight: daylightHours(middleDays[i], s.latitude), production: annual * monthlyWeights[i] }));
@@ -100,36 +126,40 @@ function calculate() {
   const today = new Date(), start = new Date(today.getFullYear(), 0, 0);
   const dayNumber = Math.floor((today - start) / 86400000);
   const todayLight = daylightHours(dayNumber, s.latitude);
-  const todayYield = annual / 365 * Math.max(.05, Math.sin((Math.PI * (dayNumber - 20)) / 365) * .72 + .43);
+  const daysThisMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+  const currentMonthAverage = data[today.getMonth()].production / daysThisMonth;
+  const sunnyDayFactor = 1.18;
+  const physicalSunnyDayLimit = systemKwp * 6.2;
+  const todayYield = Math.min(currentMonthAverage * sunnyDayFactor, physicalSunnyDayLimit);
   const best = data.reduce((max, item, i) => item.production > data[max].production ? i : max, 0);
-  const peak = systemKwp * .92;
-  const dynamicSavings = data.reduce((sum, item, i) => sum + item.production * historicDynamicPrices[i], 0);
-  const dynamicAverage = annual ? dynamicSavings / annual : 0;
   const isDynamic = s.contractType === "dynamisch";
-  const energyValue = isDynamic ? dynamicSavings : annual * fixedEnergyPrice;
+  const energyValue = annual * fixedEnergyPrice;
+  const todayPrice = fixedEnergyPrice;
+  const todayValue = todayYield * todayPrice;
+  const todayLow = todayYield * .88;
+  const todayHigh = todayYield * 1.12;
 
-  $("energyPrice").disabled = isDynamic;
-  if (isDynamic) $("energyPrice").value = dynamicAverage.toFixed(3).replace(".", ",");
+  $("energyPrice").disabled = false;
   $("energyPriceHelp").textContent = isDynamic
-    ? "Automatisch berekend met historische maandprijzen; exclusief belasting en leveranciersopslag."
-    : "Vul je eigen stroomprijs in.";
+    ? "Dynamische uurprijzen wisselen sterk. Vul zelf een gemiddelde waarde per opgewekte kWh in."
+    : "Vul zelf een gemiddelde waarde in, inclusief relevante belasting en leveranciersopslag.";
 
   $("annualProduction").textContent = Math.round(annual).toLocaleString("nl-NL");
-  $("peakPower").textContent = peak.toLocaleString("nl-NL", { maximumFractionDigits: 1 });
-  $("longestDay").textContent = Math.max(...data.map(item => item.daylight)).toLocaleString("nl-NL", { maximumFractionDigits: 1 });
+  $("longestDay").textContent = daylightHours(172, s.latitude).toLocaleString("nl-NL", { maximumFractionDigits: 1 });
+  $("shortestDay").textContent = daylightHours(355, s.latitude).toLocaleString("nl-NL", { maximumFractionDigits: 1 });
   $("annualSavings").textContent = `€ ${Math.round(energyValue).toLocaleString("nl-NL")}`;
-  $("priceSummary").textContent = isDynamic
-    ? `Dynamisch historisch gemiddelde: € ${dynamicAverage.toFixed(3).replace(".", ",")} per kWh`
-    : `Vast / variabel: € ${fixedEnergyPrice.toFixed(2).replace(".", ",")} per kWh`;
-  $("homeCoverage").textContent = `Goed voor ${Math.round(annual / 35)}% van een gemiddeld huis`;
+  $("priceSummary").textContent = `${isDynamic ? "Dynamische" : "Vast / variabel"} ingestelde gemiddelde waarde: € ${fixedEnergyPrice.toFixed(3).replace(".", ",")} per kWh`;
+  $("homeCoverage").textContent = `${Math.round(annual / 35)}% van 3.500 kWh per jaar`;
   $("todayProduction").textContent = `${todayYield.toLocaleString("nl-NL", { maximumFractionDigits: 1 })} kWh`;
-  $("todayProgress").style.width = `${Math.min(100, todayYield / (annual / 365 * 1.3) * 100)}%`;
-  $("sunriseToday").textContent = `↑ ${formatTime(12 - todayLight / 2)}`;
-  $("sunsetToday").textContent = `↓ ${formatTime(12 + todayLight / 2)}`;
+  $("todayRange").textContent = `Verwachte bandbreedte: ${todayLow.toLocaleString("nl-NL", { maximumFractionDigits: 1 })}–${todayHigh.toLocaleString("nl-NL", { maximumFractionDigits: 1 })} kWh`;
+  $("todayValue").textContent = `€ ${todayValue.toLocaleString("nl-NL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  $("todayProgress").style.width = `${Math.min(100, todayYield / physicalSunnyDayLimit * 100)}%`;
+  const noon = solarNoon(dayNumber, s.longitude);
+  $("sunriseToday").textContent = `↑ circa ${formatTime(noon - todayLight / 2)}`;
+  $("sunsetToday").textContent = `↓ circa ${formatTime(noon + todayLight / 2)}`;
   $("bestMonth").textContent = longMonths[best];
   $("bestMonthYield").textContent = `${Math.round(data[best].production)} kWh`;
   $("locationLabel").textContent = selectedLocationName || `${s.latitude.toFixed(2)}°, ${s.longitude.toFixed(2)}°`;
-  $("powerBars").innerHTML = data.map(item => `<i style="height:${Math.round(item.production / data[best].production * 100)}%"></i>`).join("");
   localStorage.setItem("zonlijnSettingsV2", JSON.stringify(s));
   drawChart();
 }
@@ -179,7 +209,7 @@ function showChartTooltip(event) {
   const index = Math.max(0, Math.min(chartData.length - 1, Math.round((x - chartLeft) / (chartRight - chartLeft) * (chartData.length - 1))));
   const item = chartData[index];
   const isDynamic = $("contractType").value === "dynamisch";
-  const price = isDynamic ? historicDynamicPrices[item.priceIndex] : fixedEnergyPrice;
+  const price = fixedEnergyPrice;
   const value = item.production * price;
 
   tooltip.innerHTML = `
@@ -188,7 +218,7 @@ function showChartTooltip(event) {
     ${item.sunshine !== null ? `<span>Zonuren in ${item.weatherYear} <b>${item.sunshine.toLocaleString("nl-NL", { maximumFractionDigits: 1 })} uur</b></span>
     <span>Bewolking in ${item.weatherYear} <b>${Math.round(item.cloudCover)}%</b></span>` : chartMonth !== null ? `<span>Weerhistorie <b>${weatherLoading ? "laden..." : "niet beschikbaar"}</b></span>` : ""}
     <span>Productie <b>${Math.round(item.production).toLocaleString("nl-NL")} kWh</b></span>
-    <span>${isDynamic ? "Historische prijs" : "Ingestelde prijs"} <b>€ ${price.toFixed(3).replace(".", ",")}</b></span>
+    <span>Ingestelde gemiddelde waarde <b>€ ${price.toFixed(3).replace(".", ",")}</b></span>
     <span>Waarde <b>€ ${Math.round(value).toLocaleString("nl-NL")}</b></span>`;
   tooltip.classList.add("visible");
 
@@ -308,23 +338,21 @@ function restoreSettings() {
   fixedEnergyPrice = saved.energyPrice ?? defaultSettings.energyPrice;
   installations = saved.installations.map(item => ({ ...defaultInstallation, ...item }));
   formIds.forEach(id => $(id).value = saved[id]);
-  $("energyPrice").value = fixedEnergyPrice.toFixed(2).replace(".", ",");
+  $("energyPrice").value = fixedEnergyPrice.toFixed(3).replace(".", ",");
   renderInstallations();
 }
 
 formIds.forEach(id => $(id).addEventListener("input", event => {
-  if (event.target.id === "energyPrice" && $("contractType").value !== "dynamisch") {
+  if (event.target.id === "energyPrice") {
     const parsed = parseDutchNumber(event.target.value);
     if (parsed !== null && parsed >= 0 && parsed <= 5) fixedEnergyPrice = parsed;
   }
   if (event.target.id === "latitude" || event.target.id === "longitude") { historicWeather = {}; selectedLocationName = ""; }
   calculate();
 }));
-$("contractType").addEventListener("change", () => {
-  if ($("contractType").value !== "dynamisch") $("energyPrice").value = fixedEnergyPrice.toFixed(2).replace(".", ",");
-});
+$("contractType").addEventListener("change", () => $("energyPrice").value = fixedEnergyPrice.toFixed(3).replace(".", ","));
 $("energyPrice").addEventListener("blur", () => {
-  if ($("contractType").value !== "dynamisch") $("energyPrice").value = fixedEnergyPrice.toFixed(2).replace(".", ",");
+  $("energyPrice").value = fixedEnergyPrice.toFixed(3).replace(".", ",");
 });
 $("addInstallationButton").addEventListener("click", () => {
   installations.push({ ...defaultInstallation, name: `Installatie ${installations.length + 1}` });
@@ -347,4 +375,4 @@ $("chartBackButton").addEventListener("click", () => {
   drawChart();
 });
 window.addEventListener("resize",drawChart);
-restoreSettings();calculate();
+restoreSettings();calculate();updateVisitorCounter();

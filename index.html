@@ -18,6 +18,10 @@
       <span class="brand-mark">Z</span>
       <span>Zonlijn</span>
     </a>
+    <nav class="main-nav">
+      <a class="active" href="index.html">Zonnepanelen</a>
+      <a href="batterij.html">Thuisbatterij</a>
+    </nav>
     <div class="top-actions">
       <span class="status-dot"></span>
       <span id="locationLabel">Utrecht, Nederland</span>
@@ -33,13 +37,16 @@
         <p>Van de eerste zonnestraal tot je hoogste opbrengst. Alles in één rustige lijn.</p>
       </div>
       <div class="today-card">
-        <span class="eyebrow">VANDAAG</span>
+        <span class="eyebrow">GESCHATTE ZONNIGE DAG VANDAAG</span>
         <strong id="todayProduction">— kWh</strong>
+        <div class="today-range" id="todayRange">Verwachte bandbreedte: —</div>
+        <div class="today-value">Geschatte waarde <b id="todayValue">€ —</b></div>
         <div class="today-line"><span id="todayProgress"></span></div>
         <div class="today-meta">
           <span id="sunriseToday">↑ —</span>
           <span id="sunsetToday">↓ —</span>
         </div>
+        <small class="today-note">Werkelijke opbrengst kan afwijken door weer, temperatuur, schaduw en installatieverlies.</small>
       </div>
     </section>
 
@@ -48,26 +55,20 @@
         <div class="metric-icon">☼</div>
         <span>Verwachte jaarproductie</span>
         <strong id="annualProduction">—</strong>
-        <small>kWh per jaar</small>
-        <div class="comparison" id="homeCoverage">Goed voor —% van een gemiddeld huis</div>
-      </article>
-      <article class="metric-card">
-        <div class="metric-icon">↗</div>
-        <span>Hoogste vermogen</span>
-        <strong id="peakPower">—</strong>
-        <small>kW piekvermogen</small>
-        <div class="mini-bars" id="powerBars"></div>
+        <small>kWh per jaar · Nederlandse rekenindicatie</small>
+        <div class="comparison" id="homeCoverage">Vergeleken met 3.500 kWh per jaar</div>
       </article>
       <article class="metric-card">
         <div class="metric-icon">◐</div>
-        <span>Langste dag</span>
-        <strong id="longestDay">—</strong>
-        <small>uur daglicht</small>
-        <div class="comparison muted">Rond 21 juni</div>
+        <span>Daglicht uitersten</span>
+        <div class="daylight-extremes">
+          <div><small>Langste dag · rond 21 juni</small><strong><span id="longestDay">—</span> uur</strong></div>
+          <div><small>Kortste dag · rond 21 december</small><strong><span id="shortestDay">—</span> uur</strong></div>
+        </div>
       </article>
       <article class="metric-card">
         <div class="metric-icon">€</div>
-        <span>Geschatte besparing</span>
+        <span>Geschatte financiële waarde</span>
         <strong id="annualSavings">—</strong>
         <small>per jaar</small>
           <div class="comparison muted" id="priceSummary">Bij € 0,30 per kWh</div>
@@ -85,7 +86,7 @@
           <div class="legend">
             <span><i class="legend-line sunlight"></i> Daglicht</span>
             <span><i class="legend-line production"></i> Productie</span>
-            <span class="weather-legend" id="weatherLegend"><i class="legend-line weather"></i> Historische zonuren</span>
+            <span class="weather-legend" id="weatherLegend"><i class="legend-line weather"></i> Weerhistorie vorig jaar (modeldata)</span>
           </div>
         </div>
       </div>
@@ -139,19 +140,28 @@
             </select>
           </label>
           <label>
-            Waarde per opgewekte kWh
+            Gemiddelde waarde per opgewekte kWh
             <div class="input-suffix"><input type="text" inputmode="decimal" id="energyPrice" value="0,30" aria-label="Waarde per opgewekte kilowattuur"><span>€</span></div>
-            <small id="energyPriceHelp">Vul je eigen stroomprijs in.</small>
+            <small id="energyPriceHelp">Vul zelf een gemiddelde waarde in, inclusief relevante belasting en leveranciersopslag.</small>
           </label>
         </form>
+        <p class="calculation-note">De jaaropbrengst is een indicatieve Nederlandse berekening op basis van 875 kWh per kWp bij een gunstige opstelling. De ingevulde locatie verandert de daglicht- en weerinformatie, maar nog niet de jaaropbrengstberekening. Weer, omvormer, temperatuur, vervuiling en kabelverliezen kunnen de werkelijke opbrengst veranderen. De financiële waarde per opgewekte kWh verschilt door zelfverbruik, teruglevering en jouw contract.</p>
         <button class="location-button" id="locationButton">⌖ Gebruik mijn huidige locatie</button>
       </article>
     </section>
   </main>
 
+  <aside class="disclaimer">
+    <strong>Disclaimer</strong>
+    <p>Alle opbrengsten, prijzen, besparingen, daglichtgegevens en andere resultaten in Zonlijn zijn indicatieve schattingen. Werkelijke resultaten kunnen afwijken door onder andere weer, locatie, installatie, energiecontract, belastingen en wijzigingen bij leveranciers. Controleer belangrijke gegevens altijd bij een erkende installateur, energieleverancier of andere deskundige. Aan deze berekeningen kunnen geen rechten worden ontleend.</p>
+  </aside>
+
   <footer>
-    <strong>Zonlijn</strong>
-    <span>Een heldere kijk op jouw zonne-energie.</span>
+    <div>
+      <strong>Zonlijn</strong>
+      <span>Een heldere kijk op jouw zonne-energie.</span>
+    </div>
+    <span class="visitor-counter" id="visitorCounter" title="Deze testteller telt alleen bezoeken op dit apparaat">◉ <b>—</b> lokale testbezoeken</span>
   </footer>
 
   <script src="app.js"></script>
