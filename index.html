@@ -1,169 +1,518 @@
 <!doctype html>
 <html lang="nl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#071611">
-  <title>Zonlijn</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <div class="glow glow-one"></div>
-  <div class="glow glow-two"></div>
-  <header class="topbar">
-    <a class="brand" href="#">
-      <span class="brand-mark">Z</span>
-      <span>Zonlijn</span>
-    </a>
-    <nav class="main-nav">
-      <a class="active" href="index.html">Zonnepanelen</a>
-      <a href="batterij.html">Thuisbatterij</a>
-    </nav>
-    <div class="top-actions">
-      <span class="status-dot"></span>
-      <span id="locationLabel">Utrecht, Nederland</span>
-      <button class="icon-button" id="settingsButton" aria-label="Open instellingen">☰</button>
-    </div>
-  </header>
-
-  <main>
-    <section class="hero">
-      <div>
-        <span class="eyebrow">JOUW ZONNEJAAR</span>
-        <h1>Zie wanneer het licht<br>voor je werkt.</h1>
-        <p>Van de eerste zonnestraal tot je hoogste opbrengst. Alles in één rustige lijn.</p>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+      name="description"
+      content="Bereken wat elektrisch rijden kost per maand, per jaar en per 100 km. Vergelijk laadkosten direct met benzine."
+    >
+    <meta name="robots" content="index, follow">
+    <meta property="og:locale" content="nl_NL">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="EV Bespaarcheck | Wat kost elektrisch rijden?">
+    <meta property="og:description" content="Bereken laadkosten en vergelijk elektrisch rijden direct met benzine.">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="EV Bespaarcheck | Wat kost elektrisch rijden?">
+    <meta name="twitter:description" content="Bereken laadkosten en vergelijk elektrisch rijden direct met benzine.">
+    <meta name="theme-color" content="#09233f">
+    <title>EV Bespaarcheck | Wat kost elektrisch rijden?</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css?v=20260611-3">
+    <script src="app.js?v=20260611-3" defer></script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "EV Bespaarcheck",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Any",
+        "inLanguage": "nl-NL",
+        "description": "Calculator voor laadkosten, besparing ten opzichte van benzine en rijbereik op zonnepanelen."
+      }
+    </script>
+  </head>
+  <body>
+    <noscript>
+      <div class="noscript-notice">
+        EV Bespaarcheck heeft JavaScript nodig om berekeningen uit te voeren. Schakel JavaScript in en vernieuw de pagina.
       </div>
-      <div class="today-card">
-        <span class="eyebrow">GESCHATTE ZONNIGE DAG VANDAAG</span>
-        <strong id="todayProduction">— kWh</strong>
-        <div class="today-range" id="todayRange">Verwachte bandbreedte: —</div>
-        <div class="today-value">Geschatte waarde <b id="todayValue">€ —</b></div>
-        <div class="today-line"><span id="todayProgress"></span></div>
-        <div class="today-meta">
-          <span id="sunriseToday">↑ —</span>
-          <span id="sunsetToday">↓ —</span>
-        </div>
-        <small class="today-note">Werkelijke opbrengst kan afwijken door weer, temperatuur, schaduw en installatieverlies.</small>
+    </noscript>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="#top" aria-label="EV Bespaarcheck home">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" role="img">
+              <path d="M13 2 5.5 13H11l-1 9L18.5 10H13l0-8Z"></path>
+            </svg>
+          </span>
+          <span>
+            <strong>EV Bespaarcheck</strong>
+            <small>Bereken wat elektrisch rijden jou echt kost</small>
+          </span>
+        </a>
+
+        <button class="menu-button" type="button" aria-expanded="false" aria-controls="main-nav">
+          <span class="sr-only">Menu openen</span>
+          <span></span><span></span><span></span>
+        </button>
+
+        <nav id="main-nav" class="main-nav" aria-label="Hoofdnavigatie">
+          <a href="#calculator">Calculator</a>
+          <a href="#zonnepanelen">Zonnepanelen</a>
+          <a href="#vergelijking">EV vs Benzine</a>
+          <a href="#slim-laden">Slim laden</a>
+          <a href="#faq">Veelgestelde vragen</a>
+        </nav>
       </div>
-    </section>
+    </header>
 
-    <section class="metrics">
-      <article class="metric-card featured">
-        <div class="metric-icon">☼</div>
-        <span>Verwachte jaarproductie</span>
-        <strong id="annualProduction">—</strong>
-        <small>kWh per jaar · Nederlandse rekenindicatie</small>
-        <div class="comparison" id="homeCoverage">Vergeleken met 3.500 kWh per jaar</div>
-      </article>
-      <article class="metric-card">
-        <div class="metric-icon">◐</div>
-        <span>Daglicht uitersten</span>
-        <div class="daylight-extremes">
-          <div><small>Langste dag · rond 21 juni</small><strong><span id="longestDay">—</span> uur</strong></div>
-          <div><small>Kortste dag · rond 21 december</small><strong><span id="shortestDay">—</span> uur</strong></div>
-        </div>
-      </article>
-      <article class="metric-card">
-        <div class="metric-icon">€</div>
-        <span>Geschatte financiële waarde</span>
-        <strong id="annualSavings">—</strong>
-        <small>per jaar</small>
-          <div class="comparison muted" id="priceSummary">Bij € 0,30 per kWh</div>
-      </article>
-    </section>
-
-    <section class="chart-card">
-      <div class="section-heading">
-        <div>
-          <span class="eyebrow" id="chartEyebrow">12 MAANDEN</span>
-          <h2 id="chartTitle">Licht en opbrengst door het jaar</h2>
-        </div>
-        <div class="chart-actions">
-          <button class="small-button chart-back" id="chartBackButton">← Terug naar jaar</button>
-          <div class="legend">
-            <span><i class="legend-line sunlight"></i> Daglicht</span>
-            <span><i class="legend-line production"></i> Productie</span>
-            <span class="weather-legend" id="weatherLegend"><i class="legend-line weather"></i> Weerhistorie vorig jaar (modeldata)</span>
+    <main id="top">
+      <section class="hero">
+        <div class="hero-glow hero-glow-one"></div>
+        <div class="hero-glow hero-glow-two"></div>
+        <div class="page-shell hero-content">
+          <div class="hero-copy">
+            <span class="eyebrow">Onafhankelijke kostenindicatie</span>
+            <h1>Wat kost elektrisch rijden echt?</h1>
+            <p>
+              Bereken je laadkosten per maand, per jaar en per 100 km. Vergelijk elektrisch
+              rijden direct met benzine.
+            </p>
+            <a class="primary-button" href="#calculator">
+              Start berekening
+              <span aria-hidden="true">→</span>
+            </a>
           </div>
-        </div>
-      </div>
-      <div class="chart-wrap">
-        <canvas id="yearChart"></canvas>
-        <div class="chart-tooltip" id="chartTooltip"></div>
-      </div>
-      <div class="chart-insight">
-        <span class="insight-icon">✦</span>
-        <div>
-          <strong>Jouw beste zonnemaand is <span id="bestMonth">—</span></strong>
-          <p>In deze maand produceren je panelen naar verwachting het meest.</p>
-        </div>
-        <strong id="bestMonthYield">— kWh</strong>
-      </div>
-    </section>
 
-    <section class="lower-grid">
-      <article class="settings-card" id="settings">
-        <div class="section-heading">
-          <div>
-            <span class="eyebrow">JOUW INSTALLATIE</span>
-            <h2>Reken met jouw dak</h2>
-          </div>
-          <button class="small-button" id="resetButton">Herstel</button>
-        </div>
-        <div id="installations"></div>
-        <button class="add-installation-button" id="addInstallationButton">+ Extra panelen toevoegen</button>
-        <form id="solarForm">
-          <label class="location-search-label">
-            Adres, plaats of postcode
-            <div class="location-search">
-              <input type="search" id="locationSearch" placeholder="Bijvoorbeeld Dorpsstraat 10, Utrecht">
-              <button type="button" id="locationSearchButton">Zoeken</button>
+          <div class="hero-visual" aria-label="Voorbeeld van een jaarlijkse besparing">
+            <div class="hero-card">
+              <div class="hero-card-top">
+                <span class="status-dot"></span>
+                <span>Voorbeeldberekening: tot</span>
+              </div>
+              <strong id="hero-saving">€ 1.388</strong>
+              <span>per jaar besparen</span>
+              <div class="sparkline" aria-hidden="true">
+                <span style="height: 35%"></span>
+                <span style="height: 48%"></span>
+                <span style="height: 42%"></span>
+                <span style="height: 61%"></span>
+                <span style="height: 72%"></span>
+                <span style="height: 83%"></span>
+                <span style="height: 100%"></span>
+              </div>
             </div>
-            <small id="locationSearchMessage">Vul een adres met huisnummer in om ook de straatnaam te zien.</small>
-          </label>
-          <label>
-            Breedtegraad
-            <div class="input-suffix"><input type="number" id="latitude" min="-65" max="65" step="0.01" value="52.09"><span>°</span></div>
-          </label>
-          <label>
-            Lengtegraad
-            <div class="input-suffix"><input type="number" id="longitude" min="-180" max="180" step="0.01" value="5.12"><span>°</span></div>
-          </label>
-          <label>
-            Energiecontract
-            <select id="contractType">
-              <option value="vast">Vast / variabel contract</option>
-              <option value="dynamisch">Dynamisch contract</option>
-            </select>
-          </label>
-          <label>
-            Gemiddelde waarde per opgewekte kWh
-            <div class="input-suffix"><input type="text" inputmode="decimal" id="energyPrice" value="0,30" aria-label="Waarde per opgewekte kilowattuur"><span>€</span></div>
-            <small id="energyPriceHelp">Vul zelf een gemiddelde waarde in, inclusief relevante belasting en leveranciersopslag.</small>
-          </label>
-        </form>
-        <p class="calculation-note">De jaaropbrengst is een indicatieve Nederlandse berekening op basis van 875 kWh per kWp bij een gunstige opstelling. De ingevulde locatie verandert de daglicht- en weerinformatie, maar nog niet de jaaropbrengstberekening. Weer, omvormer, temperatuur, vervuiling en kabelverliezen kunnen de werkelijke opbrengst veranderen. De financiële waarde per opgewekte kWh verschilt door zelfverbruik, teruglevering en jouw contract.</p>
-        <button class="location-button" id="locationButton">⌖ Gebruik mijn huidige locatie</button>
-      </article>
-    </section>
-  </main>
+          </div>
 
-  <aside class="disclaimer">
-    <strong>Disclaimer</strong>
-    <p>Alle opbrengsten, prijzen, besparingen, daglichtgegevens en andere resultaten in Zonlijn zijn indicatieve schattingen. Werkelijke resultaten kunnen afwijken door onder andere weer, locatie, installatie, energiecontract, belastingen en wijzigingen bij leveranciers. Controleer belangrijke gegevens altijd bij een erkende installateur, energieleverancier of andere deskundige. Aan deze berekeningen kunnen geen rechten worden ontleend.</p>
-  </aside>
+          <div class="feature-row">
+            <article class="feature-card">
+              <span class="feature-icon" aria-hidden="true">€</span>
+              <div><strong>Laadkosten berekenen</strong><small>Thuis en onderweg</small></div>
+            </article>
+            <article class="feature-card">
+              <span class="feature-icon" aria-hidden="true">↔</span>
+              <div><strong>Vergelijk met benzine</strong><small>Direct inzicht</small></div>
+            </article>
+            <article class="feature-card">
+              <span class="feature-icon" aria-hidden="true">%</span>
+              <div><strong>Inclusief laadverlies</strong><small>Realistische uitkomst</small></div>
+            </article>
+          </div>
+        </div>
+        <aside class="calculator-disclaimer">
+          Alle uitkomsten zijn indicatief. Controleer altijd je eigen tarieven, verbruik en laadgedrag.
+        </aside>
+      </section>
 
-  <footer>
-    <div>
-      <strong>Zonlijn</strong>
-      <span>Een heldere kijk op jouw zonne-energie.</span>
-    </div>
-    <span class="visitor-counter" id="visitorCounter" title="Deze testteller telt alleen bezoeken op dit apparaat">◉ <b>—</b> lokale testbezoeken</span>
-  </footer>
+      <div class="page-shell">
+        <aside class="notice" aria-label="Belangrijke informatie">
+          <span class="notice-icon" aria-hidden="true">i</span>
+          <p>
+            <strong>Goed om te weten:</strong> Deze bedragen zijn indicatief en afhankelijk
+            van je eigen tarieven, rijstijl en laadgedrag. Werkelijke kosten hangen ook af
+            van snelheid, temperatuur, banden, belading en laadverlies.
+          </p>
+        </aside>
+      </div>
 
-  <script src="app.js"></script>
-</body>
+      <section id="calculator" class="calculator-section section">
+        <div class="page-shell">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow eyebrow-dark">Persoonlijke berekening</span>
+              <h2>Bereken jouw EV-kosten</h2>
+              <p>Pas de waarden aan. Je resultaten worden direct bijgewerkt.</p>
+            </div>
+            <button id="reset-button" class="secondary-button" type="button">Herstel standaardwaarden</button>
+          </div>
+
+          <div class="calculator-layout">
+            <form id="calculator-form" class="calculator-card" novalidate>
+              <div class="card-heading">
+                <span class="step-number">1</span>
+                <div><h3>Jouw gegevens</h3><p>Vul je gebruik en actuele tarieven in.</p></div>
+              </div>
+
+              <div class="form-section car-picker-section">
+                <h4>Kies je elektrische auto</h4>
+                <div class="choice-grid" role="radiogroup" aria-label="Manier van auto invoeren">
+                  <label class="choice-card">
+                    <input type="radio" name="car-entry-mode" value="list" checked>
+                    <span class="choice-indicator"></span>
+                    <span>
+                      <strong>Kies auto uit lijst</strong>
+                      <small>Vul verbruik en accu automatisch in</small>
+                    </span>
+                  </label>
+                  <label class="choice-card">
+                    <input type="radio" name="car-entry-mode" value="custom">
+                    <span class="choice-indicator"></span>
+                    <span>
+                      <strong>Mijn auto staat niet in de lijst</strong>
+                      <small>Voer je eigen autogegevens in</small>
+                    </span>
+                  </label>
+                </div>
+
+                <div id="car-list-fields" class="car-entry-panel">
+                  <div class="input-grid car-select-grid">
+                    <label class="field">
+                      <span>Merk</span>
+                      <span class="select-wrap">
+                        <select id="car-brand">
+                          <option value="">Kies een merk</option>
+                        </select>
+                      </span>
+                    </label>
+                    <label class="field">
+                      <span>Model</span>
+                      <span class="select-wrap">
+                        <select id="car-model" disabled>
+                          <option value="">Kies eerst een merk</option>
+                        </select>
+                      </span>
+                    </label>
+                    <label class="field">
+                      <span>Uitvoering</span>
+                      <span class="select-wrap">
+                        <select id="car-trim" disabled>
+                          <option value="">Kies eerst een model</option>
+                        </select>
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                <div id="custom-car-fields" class="car-entry-panel" hidden>
+                  <div class="input-grid">
+                    <label class="field">
+                      <span>Merk / autonaam</span>
+                      <span class="input-wrap"><input id="custom-car-brand" type="text" placeholder="Bijv. Polestar"></span>
+                    </label>
+                    <label class="field">
+                      <span>Model</span>
+                      <span class="input-wrap"><input id="custom-car-model" type="text" placeholder="Bijv. 4"></span>
+                    </label>
+                    <label class="field">
+                      <span>Uitvoering <small>(optioneel)</small></span>
+                      <span class="input-wrap"><input id="custom-car-trim" type="text" placeholder="Bijv. Long range"></span>
+                    </label>
+                  </div>
+                </div>
+
+                <div class="selected-car-values">
+                  <div class="selected-car-values-heading">
+                    <strong id="selected-car-name">Pas de standaardwaarden aan</strong>
+                    <span>Je kunt het verbruik altijd aanpassen voor jouw eigen rijstijl.</span>
+                  </div>
+                  <div class="input-grid">
+                    <label class="field">
+                      <span>Verbruik elektrische auto</span>
+                      <span class="input-wrap"><input id="ev-consumption" type="number" min="1" step="0.1" value="16.5"><em>kWh / 100 km</em></span>
+                    </label>
+                    <label class="field">
+                      <span>Accucapaciteit</span>
+                      <span class="input-wrap"><input id="battery-capacity" type="number" min="1" step="0.1" value="60"><em>kWh</em></span>
+                    </label>
+                  </div>
+                </div>
+
+                <p class="car-picker-help">
+                  Staat je auto er niet tussen? Kies dan 'Mijn auto staat niet in de lijst' en vul je eigen verbruik en accucapaciteit in.
+                </p>
+                <p id="vehicle-database-status" class="vehicle-database-status">Autodatabase laden...</p>
+                <p class="car-data-notice">
+                  De autogegevens zijn indicatief. Werkelijk verbruik hangt af van rijstijl, snelheid, temperatuur, banden, belading en weersomstandigheden. Pas het verbruik gerust aan op basis van je eigen ervaring.
+                </p>
+              </div>
+
+              <div class="form-section">
+                <h4>Gebruik en auto</h4>
+                <div class="input-grid">
+                  <label class="field">
+                    <span>Kilometers per jaar</span>
+                    <span class="input-wrap"><input id="kilometers" type="number" min="1" step="500" value="15000"><em>km</em></span>
+                  </label>
+                  <label class="field">
+                    <span>Laadverlies</span>
+                    <span class="input-wrap"><input id="charging-loss" type="number" min="0" max="100" step="1" value="10"><em>%</em></span>
+                  </label>
+                </div>
+              </div>
+
+              <div class="form-section">
+                <h4>Waar laad je?</h4>
+                <p class="form-section-intro">Kies een herkenbare situatie of verschuif zelf de verdeling. Snelladen wordt automatisch aangevuld tot 100%.</p>
+                <div class="charging-presets" aria-label="Snelle keuzes laadverdeling">
+                  <button type="button" class="charging-preset active" data-home-percentage="80">
+                    <strong>Meestal thuis</strong><span>80% thuis · 20% snel</span>
+                  </button>
+                  <button type="button" class="charging-preset" data-home-percentage="50">
+                    <strong>Gelijke mix</strong><span>50% thuis · 50% snel</span>
+                  </button>
+                  <button type="button" class="charging-preset" data-home-percentage="20">
+                    <strong>Veel onderweg</strong><span>20% thuis · 80% snel</span>
+                  </button>
+                </div>
+                <div class="charging-mix-card">
+                  <div class="charging-mix-heading">
+                    <span>Jouw laadverdeling</span>
+                    <strong><span id="home-percentage-label">80%</span> thuis · <span id="fast-percentage-label">20%</span> snel</strong>
+                  </div>
+                  <input id="home-percentage" class="charging-range" type="range" min="0" max="100" step="5" value="80" aria-label="Percentage thuisladen">
+                  <div class="charging-range-labels"><span>Meer snelladen</span><span>Meer thuisladen</span></div>
+                  <input id="fast-percentage" type="hidden" value="20">
+                </div>
+                <div class="input-grid">
+                  <label class="field">
+                    <span>Stroomprijs thuis</span>
+                    <span class="input-wrap has-prefix"><b>€</b><input id="home-price" type="number" min="0" step="0.01" value="0.30"><em>per kWh</em></span>
+                  </label>
+                  <label class="field">
+                    <span>Prijs snelladen</span>
+                    <span class="input-wrap has-prefix"><b>€</b><input id="fast-price" type="number" min="0" step="0.01" value="0.65"><em>per kWh</em></span>
+                  </label>
+                </div>
+                <div class="form-message info-message">
+                  Thuisladen en snelladen zijn samen altijd 100%. Zonneladen bereken je apart bij zonnepanelen.
+                </div>
+              </div>
+
+              <div class="form-section">
+                <h4>Vergelijking met benzine</h4>
+                <div class="input-grid">
+                  <label class="field">
+                    <span>Benzineprijs</span>
+                    <span class="input-wrap has-prefix"><b>€</b><input id="fuel-price" type="number" min="0" step="0.01" value="2.05"><em>per liter</em></span>
+                  </label>
+                  <label class="field">
+                    <span>Benzineverbruik</span>
+                    <span class="input-wrap"><input id="fuel-consumption" type="number" min="0.1" step="0.1" value="6.5"><em>l / 100 km</em></span>
+                  </label>
+                </div>
+              </div>
+
+              <div id="general-error" class="form-message error-message" role="alert" hidden>
+                Controleer de invoervelden. Gebruik alleen geldige, positieve waarden.
+              </div>
+            </form>
+
+            <div class="results-column">
+              <section class="results-card" aria-live="polite">
+                <div class="card-heading">
+                  <span class="step-number green">2</span>
+                  <div><h3>Jouw resultaat</h3><p>Op basis van de ingevulde gegevens.</p></div>
+                </div>
+
+                <div class="primary-results">
+                  <article class="primary-result">
+                    <span>Kosten per maand</span>
+                    <strong id="cost-month">€ 85</strong>
+                    <small>aan laadkosten</small>
+                  </article>
+                  <article class="primary-result accent">
+                    <span>Besparing per jaar</span>
+                    <strong id="saving-year">€ 1.388</strong>
+                    <small>ten opzichte van benzine</small>
+                  </article>
+                </div>
+
+                <div class="result-grid">
+                  <article class="result-item"><span>Kosten per jaar</span><strong id="cost-year">€ 1.007</strong></article>
+                  <article class="result-item"><span>Kosten per 100 km</span><strong id="cost-100">€ 7</strong></article>
+                  <article class="result-item"><span>Benzine per jaar</span><strong id="fuel-year">€ 1.999</strong></article>
+                  <article class="result-item"><span>Besparing per maand</span><strong id="saving-month">€ 116</strong></article>
+                  <article class="result-item"><span>kWh per jaar</span><strong id="kwh-year">2.723 kWh</strong></article>
+                  <article class="result-item"><span>Laadbeurten per jaar</span><strong id="charges-year">45</strong></article>
+                </div>
+              </section>
+
+              <section class="charging-cost-card">
+                <h3>Opbouw laadkosten</h3>
+                <p>Een eenvoudig overzicht van waar je jaarlijkse laadkosten ontstaan.</p>
+                <div class="cost-breakdown" aria-label="Opbouw jaarlijkse laadkosten">
+                  <div><span>Thuisladen</span><strong id="home-cost-year">€ 653</strong></div>
+                  <div><span>Snelladen</span><strong id="fast-cost-year">€ 354</strong></div>
+                  <div class="breakdown-total"><span>Totale laadkosten</span><strong id="economic-total-year">€ 1.007</strong></div>
+                </div>
+                <p class="cost-consistency-note">Thuisladen + snelladen is altijd exact gelijk aan de totale laadkosten.</p>
+              </section>
+
+              <section id="vergelijking" class="comparison-card">
+                <h3>EV vs benzine</h3>
+                <p>Jaarlijkse energiekosten</p>
+                <div class="bar-group">
+                  <div class="bar-label"><span>Elektrisch</span><strong id="bar-ev-label">€ 1.007</strong></div>
+                  <div class="bar-track"><span id="bar-ev" class="bar ev-bar"></span></div>
+                </div>
+                <div class="bar-group">
+                  <div class="bar-label"><span>Benzine</span><strong id="bar-fuel-label">€ 1.999</strong></div>
+                  <div class="bar-track"><span id="bar-fuel" class="bar fuel-bar"></span></div>
+                </div>
+              </section>
+
+              <section id="conclusion" class="conclusion-card">
+                <span class="conclusion-icon" aria-hidden="true">✓</span>
+                <p id="conclusion-text">
+                  Op basis van jouw invoer kost elektrisch rijden € 1.007 per jaar,
+                  ongeveer € 84 per maand. Vergeleken met benzine bespaar je ongeveer € 991 per jaar.
+                </p>
+              </section>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="zonnepanelen" class="section solar-range-section">
+        <div class="page-shell">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow eyebrow-dark">Zonnepanelen naar rijbereik</span>
+              <h2>Hoeveel kilometer rijd je op je eigen zonnepanelen?</h2>
+              <p>Bereken hoeveel kilometers je elektrische auto kan rijden op jouw jaarlijkse zonne-opbrengst.</p>
+            </div>
+          </div>
+          <div class="standalone-calculator-layout">
+            <form id="solar-range-form" class="standalone-form-card simple-solar-form" novalidate>
+              <div class="simple-step">
+                <span class="simple-step-number">1</span>
+                <div class="simple-installation-grid">
+                  <label class="field">
+                    <span>Hoeveel zonnepanelen heb je?</span>
+                    <span class="input-wrap large-input"><input id="panel-count" type="number" min="1" step="1" value="10"><em>panelen</em></span>
+                  </label>
+                  <label class="field">
+                    <span>Vermogen per paneel</span>
+                    <span class="input-wrap large-input"><input id="panel-wattage" type="number" min="1" step="10" value="430"><em>Wp</em></span>
+                  </label>
+                </div>
+              </div>
+              <div class="simple-step">
+                <span class="simple-step-number">2</span>
+                <div class="simple-slider-block">
+                  <div class="simple-slider-heading">
+                    <span>Hoeveel zonnestroom wil je voor de auto gebruiken?</span>
+                    <strong id="solar-to-car-label">35%</strong>
+                  </div>
+                  <input id="solar-to-car-percentage" class="charging-range" type="range" min="0" max="100" step="5" value="35" aria-label="Percentage zonnestroom voor de auto">
+                  <div class="charging-range-labels"><span>Een klein deel</span><span>Zoveel mogelijk</span></div>
+                </div>
+              </div>
+              <div class="solar-assumptions">
+                <strong>Aannames</strong>
+                <span>Gemiddelde jaaropbrengst · autoverbruik <b id="solar-consumption-label">16,5 kWh/100 km</b></span>
+                <input id="yield-factor" type="hidden" value="0.85">
+                <input id="solar-car-consumption" type="hidden" value="16.5">
+              </div>
+            </form>
+            <div class="standalone-results-card solar-theme simple-solar-result" aria-live="polite">
+              <span class="insight-icon sun" aria-hidden="true">☀</span>
+              <span class="simple-result-label">Je rijdt ongeveer</span>
+              <strong id="solar-range-year" class="simple-result-value">7.753 km</strong>
+              <span class="simple-result-label">per jaar op eigen zonnestroom</span>
+              <p id="solar-range-conclusion" class="standalone-conclusion">
+                Met jouw zonnepanelen kun je ongeveer 7.753 km per jaar rijden op eigen zonnestroom.
+              </p>
+              <div class="standalone-result-grid">
+                <article><span>Totaal paneelvermogen</span><strong id="total-panel-power">4,30 kWp</strong></article>
+                <article><span>Jaarlijkse zonne-opbrengst</span><strong id="annual-solar-yield">3.655 kWh</strong></article>
+                <article><span>Per maand op eigen zon</span><strong id="solar-range-month">646 km</strong></article>
+                <article class="wide-result"><span>Zonnestroom beschikbaar voor auto</span><strong id="solar-kwh-for-car">1.279 kWh</strong></article>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section insights-section">
+        <div class="page-shell">
+          <div class="section-heading compact">
+            <div><span class="eyebrow eyebrow-dark">Meer grip op laadkosten</span><h2>Slimmer elektrisch rijden</h2></div>
+          </div>
+          <div class="insight-grid">
+            <article class="insight-card">
+              <span class="insight-icon sun" aria-hidden="true">☀</span>
+              <h3>Laden met zonnepanelen</h3>
+              <p>Bereken hoeveel kilometer je elektrische auto kan rijden op de jaarlijkse opbrengst van je zonnepanelen.</p>
+              <a href="#zonnepanelen">Bereken je rijbereik <span>→</span></a>
+            </article>
+            <article id="slim-laden" class="insight-card">
+              <span class="insight-icon bolt" aria-hidden="true">↯</span>
+              <h3>Slim laden</h3>
+              <p>Laad tijdens voordelige uren en beperk snelladen om je jaarlijkse kosten beheersbaar te houden.</p>
+              <a href="#calculator">Pas je laadmix aan <span>→</span></a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" class="section faq-section">
+        <div class="page-shell faq-layout">
+          <div>
+            <span class="eyebrow eyebrow-dark">Veelgestelde vragen</span>
+            <h2>Zo werkt de bespaarcheck</h2>
+            <p>De calculator richt zich op energiekosten. Andere autokosten, zoals aanschaf, verzekering en onderhoud, zijn niet meegenomen.</p>
+          </div>
+          <div class="faq-list">
+            <details open>
+              <summary>Waarom wordt laadverlies meegerekend?<span>+</span></summary>
+              <p>Tijdens het laden gaat een deel van de energie verloren. Door dit mee te nemen krijg je een realistischer beeld van je stroomverbruik.</p>
+            </details>
+            <details>
+              <summary>Wat is een realistische laadmix?<span>+</span></summary>
+              <p>Dit verschilt per bestuurder. Wie thuis kan laden gebruikt vaak vooral thuisstroom; zonder eigen laadpunt ligt het aandeel publiek of snelladen hoger.</p>
+            </details>
+            <details>
+              <summary>Zijn onderhoud en wegenbelasting inbegrepen?<span>+</span></summary>
+              <p>Nee. De vergelijking toont uitsluitend de laadkosten van een EV tegenover de brandstofkosten van een benzineauto.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="page-shell footer-inner">
+        <div class="brand footer-brand">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M13 2 5.5 13H11l-1 9L18.5 10H13l0-8Z"></path></svg>
+          </span>
+          <span><strong>EV Bespaarcheck</strong><small>Helder inzicht in jouw laadkosten</small></span>
+        </div>
+        <div class="footer-legal">
+          <p>© <span id="current-year"></span> EV Bespaarcheck. Berekening ter indicatie.</p>
+          <nav class="footer-links" aria-label="Juridische en vertrouwenspagina's">
+            <a href="privacy.html">Privacy</a>
+            <a href="contact.html">Contact</a>
+            <a href="over.html">Over EV Bespaarcheck</a>
+            <a href="disclaimer.html">Disclaimer</a>
+          </nav>
+          <p class="legal-disclaimer">
+            <strong>Disclaimer:</strong> Alle berekeningen, tarieven, autogegevens en besparingen zijn uitsluitend indicatief. Werkelijke kosten en resultaten kunnen afwijken. Aan de informatie op deze website kunnen geen rechten worden ontleend. EV Bespaarcheck verstrekt geen financieel, juridisch of energieadvies en is niet aansprakelijk voor beslissingen die op basis van deze berekeningen worden genomen.
+          </p>
+        </div>
+      </div>
+    </footer>
+  </body>
 </html>

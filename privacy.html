@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Lees hoe EV Bespaarcheck omgaat met privacy, ingevulde gegevens en cookies.">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#09233f">
+    <title>Privacy | EV Bespaarcheck</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="styles.css?v=20260611-3">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="index.html" aria-label="EV Bespaarcheck home">
+          <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 2 5.5 13H11l-1 9L18.5 10H13l0-8Z"></path></svg></span>
+          <span><strong>EV Bespaarcheck</strong><small>Bereken wat elektrisch rijden jou echt kost</small></span>
+        </a>
+        <button class="menu-button" type="button" aria-expanded="false" aria-controls="main-nav"><span class="sr-only">Menu openen</span><span></span><span></span><span></span></button>
+        <nav id="main-nav" class="main-nav" aria-label="Hoofdnavigatie">
+          <a href="index.html#calculator">Calculator</a><a href="index.html#zonnepanelen">Zonnepanelen</a><a href="over.html">Over</a><a href="contact.html">Contact</a>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <section class="content-page-hero"><div class="page-shell"><span class="eyebrow">Vertrouwen en transparantie</span><h1>Privacy</h1><p>Hoe EV Bespaarcheck omgaat met ingevulde gegevens en cookies.</p></div></section>
+      <section class="content-page"><div class="page-shell"><article class="content-card">
+        <h2>Calculator werkt lokaal</h2>
+        <p>De calculator van EV Bespaarcheck werkt lokaal in je browser. De waarden die je invult, zoals kilometers, tarieven en autogegevens, worden niet naar een server gestuurd en niet door EV Bespaarcheck opgeslagen.</p>
+        <h2>Toekomstige diensten</h2>
+        <p>Wanneer later analytics, advertenties of contactformulieren worden toegevoegd, kan de verwerking van gegevens veranderen. Deze privacytekst wordt dan bijgewerkt en waar nodig wordt vooraf toestemming gevraagd.</p>
+        <h2>Cookies</h2>
+        <p>Functionele cookies die nodig zijn om de website goed te laten werken zijn toegestaan. Trackingcookies en advertentiecookies worden alleen geplaatst nadat je daarvoor toestemming hebt gegeven.</p>
+        <div class="trust-note"><strong>Kort gezegd:</strong> je berekening blijft momenteel op jouw apparaat.</div>
+      </article></div></section>
+    </main>
+    <footer><div class="page-shell footer-inner"><div class="brand footer-brand"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 2 5.5 13H11l-1 9L18.5 10H13l0-8Z"></path></svg></span><span><strong>EV Bespaarcheck</strong><small>Helder inzicht in jouw laadkosten</small></span></div><div class="footer-legal"><p>© <span class="current-year"></span> EV Bespaarcheck.</p><nav class="footer-links"><a href="privacy.html">Privacy</a><a href="contact.html">Contact</a><a href="over.html">Over EV Bespaarcheck</a><a href="disclaimer.html">Disclaimer</a></nav></div></div></footer>
+    <script>document.querySelectorAll(".current-year").forEach((e)=>e.textContent=new Date().getFullYear());const b=document.querySelector(".menu-button"),n=document.querySelector("#main-nav");b.addEventListener("click",()=>{const o=n.classList.toggle("open");b.setAttribute("aria-expanded",String(o))});</script>
+  </body>
+</html>
